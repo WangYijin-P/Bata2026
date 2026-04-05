@@ -398,6 +398,20 @@ body {
 </div>
 
 
+<!-- Backup sign-up banner -->
+<div id="backup-section" style="width:100%;max-width:960px;margin-top:14px;">
+  <div style="background:white;border:0.5px solid #d5d2cc;border-radius:12px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <div>
+      <div style="font-size:14px;font-weight:500;color:#1a1a1a;margin-bottom:4px;">Not sure which stage to run?</div>
+      <div style="font-size:12px;color:#888;">Sign up as a backup runner — we'll reach out if we need you for any stage.</div>
+    </div>
+    <button onclick="openBackupForm()"
+      style="white-space:nowrap;padding:10px 20px;font-size:13px;font-weight:500;background:#FAEEDA;color:#633806;border:1px solid #BA7517;border-radius:8px;cursor:pointer;flex-shrink:0;">
+      &#9679; Sign up as Backup
+    </button>
+  </div>
+</div>
+
 <div id="media-section" style="width:100%;max-width:960px;margin-top:14px;">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
     <div>
@@ -746,6 +760,26 @@ function openForm(id, preGender) {
   updateSubmitBtn();
   document.getElementById('form-overlay').classList.add('open');
 }
+function openBackupForm() {
+  // 临时把 formStageId 设为特殊值 0 表示 backup
+  formStageId = 0;
+  formGender  = null;
+  document.getElementById('form-title').textContent    = 'Sign up as Backup';
+  document.getElementById('form-sub').textContent      = "You\'ll be on the backup list — we\'ll contact you if we need a runner";
+  document.getElementById('stage-display').textContent = 'Any stage — flexible';
+  document.getElementById('f-name').value     = '';
+  document.getElementById('f-diet').value     = '';
+  document.getElementById('f-comments').value = '';
+  document.getElementById('opt-woman').classList.remove('sel');
+  document.getElementById('opt-man').classList.remove('sel');
+  document.getElementById('opt-woman').style.pointerEvents = '';
+  document.getElementById('opt-man').style.pointerEvents   = '';
+  document.getElementById('opt-woman').style.opacity = '1';
+  document.getElementById('opt-man').style.opacity   = '1';
+  updateSubmitBtn();
+  document.getElementById('form-overlay').classList.add('open');
+}
+
 function closeForm() { document.getElementById('form-overlay').classList.remove('open'); }
 function pickGender(g) {
   formGender = g;
