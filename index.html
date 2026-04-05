@@ -831,7 +831,10 @@ function renderMedia() {
       }
       return `<div class="media-slide"><video src="${f.url}" controls playsinline preload="metadata"></video></div>`;
     }
-    return `<div class="media-slide"><img src="${f.url}" alt="${f.name}"/></div>`;
+    const imgUrl = f.fromDrive
+      ? f.url.replace('thumbnail?id=', 'uc?export=view&id=').replace('&sz=w1200', '')
+      : f.url;
+    return `<div class="media-slide"><img src="${imgUrl}" alt="${f.name}" style="width:100%;height:100%;object-fit:contain;background:#111;"/></div>`;
   }).join('');
 
   track.style.transform = `translateX(-${mediaCurrent * 100}%)`;
