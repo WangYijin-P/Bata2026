@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DPM Batavierenrace 2026 · Stage Sign-Up</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #f0ede8; color: #1a1a1a;
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; padding: 28px 16px 40px;
+}
+.page-header { width: 100%; max-width: 960px; margin-bottom: 18px; display: flex; align-items: flex-end; justify-content: space-between; }
+.page-header-left h1 { font-size: 22px; font-weight: 500; letter-spacing: -0.3px; }
+.page-header-left p  { font-size: 13px; color: #888; margin-top: 3px; }
+#admin-btn {
+  font-size: 12px; padding: 7px 14px;
+  border: 0.5px solid #ccc; border-radius: 8px;
+  background: white; color: #444; cursor: pointer; white-space: nowrap;
+  display: flex; align-items: center; gap: 6px;
+}
+#admin-btn:hover { background: #f5f3ef; }
+
+/* ── Main app ── */
+#app {
+  display: flex; height: 620px;
+  border: 0.5px solid #d5d2cc; border-radius: 14px; overflow: hidden;
+  width: 100%; max-width: 960px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  position: relative;
+}
+
+/* MAP */
+#map-panel { width: 58%; position: relative; flex-shrink: 0; }
+#leaflet-map { width: 100%; height: 100%; }
+.leaflet-control-attribution { font-size: 9px !important; opacity: 0.6; }
+.leaflet-control-zoom { display: none; }
+#legend {
+  position: absolute; bottom: 14px; left: 14px; z-index: 1000;
+  background: rgba(255,255,255,0.92); border: 0.5px solid #ddd;
+  border-radius: 8px; padding: 8px 12px; font-size: 11px; color: #555;
+  display: flex; flex-direction: column; gap: 5px; pointer-events: none;
+}
+.legend-row { display: flex; align-items: center; gap: 7px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* DETAIL PANEL */
+#detail-panel { width: 42%; display: flex; flex-direction: column; background: white; border-left: 0.5px solid #e8e5e0; }
+#no-selection {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; height: 100%; gap: 10px; padding: 32px; color: #aaa; text-align: center;
+}
+#no-selection p { font-size: 13px; line-height: 1.6; }
+#detail-header { padding: 16px 18px 13px; border-bottom: 0.5px solid #eee; flex-shrink: 0; }
+.stage-title-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-bottom: 5px; }
+#detail-header h3 { font-size: 14px; font-weight: 500; }
+.badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 500; white-space: nowrap; }
+.badge-night     { background: #EEEDFE; color: #3C3489; }
+.badge-morning   { background: #E1F5EE; color: #085041; }
+.badge-afternoon { background: #FAEEDA; color: #633806; }
+.badge-neutral   { background: #f0f0ee; color: #555; }
+.stage-meta { font-size: 12px; color: #888; margin-top: 6px; }
+/* ── Media gallery ── */
+#media-wrap {
+  background: #111; position: relative;
+  overflow: hidden;
+}
+#media-track {
+  display: flex; height: 100%;
+  transition: transform 0.35s ease;
+}
+.media-slide {
+  min-width: 100%; height: 100%; position: relative; flex-shrink: 0;
+}
+.media-slide img, .media-slide video {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.media-slide video { background: #000; }
+#media-empty {
+  width: 100%; aspect-ratio: 16/9; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px;
+  background: #f5f3ef;
+}
+#media-empty span { font-size: 11px; color: #bbb; }
+#media-upload-btn {
+  font-size: 11px; color: #534AB7; background: #EEEDFE;
+  border: 0.5px solid #AFA9EC; border-radius: 6px;
+  padding: 5px 12px; cursor: pointer;
+}
+#media-upload-btn:hover { background: #e0deff; }
+#media-upload-input { display: none; }
+/* nav arrows */
+.media-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: rgba(0,0,0,0.42); color: white; border: none;
+  width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
+  font-size: 13px; display: flex; align-items: center; justify-content: center;
+  z-index: 10; line-height: 1;
+}
+.media-arrow:hover { background: rgba(0,0,0,0.68); }
+#media-prev { left: 8px; }
+#media-next { right: 8px; }
+/* counter + add btn */
+#media-counter {
+  position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 5px; align-items: center; z-index: 10;
+}
+.media-dot-ind {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: rgba(255,255,255,0.45); transition: background 0.2s;
+}
+.media-dot-ind.active { background: white; }
+#media-add-btn {
+  position: absolute; top: 7px; right: 8px; z-index: 10;
+  background: rgba(255,255,255,0.88); border: 0.5px solid #ccc;
+  border-radius: 5px; padding: 3px 8px; font-size: 10px;
+  color: #534AB7; cursor: pointer; font-weight: 500;
+}
+#media-add-btn:hover { background: white; }
+#media-label {
+  position: absolute; top: 7px; left: 8px; z-index: 10;
+  background: rgba(0,0,0,0.45); color: white;
+  font-size: 10px; padding: 2px 7px; border-radius: 4px;
+  pointer-events: none;
+}
+#signup-area { flex: 1; overflow-y: auto; padding: 14px 18px; }
+#signup-area h4 { font-size: 13px; font-weight: 500; margin-bottom: 10px; }
+#open-signup-btn { width: 100%; padding: 9px 0; margin-bottom: 14px; font-size: 13px; font-weight: 500; background: #534AB7; color: white; border: none; border-radius: 8px; cursor: pointer; }
+#open-signup-btn:hover { background: #443da0; }
+#runners-list { display: flex; flex-direction: column; gap: 6px; }
+.runner-tag { display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: #faf9f7; border-radius: 7px; border: 0.5px solid #eee; }
+.runner-avatar { width: 28px; height: 28px; border-radius: 50%; background: #CECBF6; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: #3C3489; flex-shrink: 0; }
+.runner-info { flex: 1; min-width: 0; }
+.runner-name { font-size: 13px; font-weight: 500; color: #1a1a1a; }
+.runner-sub { font-size: 11px; color: #aaa; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.runner-remove { font-size: 15px; color: #ddd; cursor: pointer; background: none; border: none; padding: 0 2px; line-height: 1; }
+.runner-remove:hover { color: #888; }
+#empty-hint { font-size: 12px; color: #bbb; font-style: italic; }
+#progress-bar { padding: 10px 18px; border-top: 0.5px solid #eee; background: #faf9f7; flex-shrink: 0; }
+.prog-label { display: flex; justify-content: space-between; font-size: 11px; color: #999; margin-bottom: 5px; }
+#progress-track { height: 4px; background: #e8e5e0; border-radius: 3px; overflow: hidden; }
+#progress-fill { height: 100%; background: #7F77DD; border-radius: 3px; transition: width 0.4s ease; }
+
+/* SIGN-UP FORM MODAL */
+#form-overlay {
+  display: none; position: absolute; inset: 0; z-index: 3000;
+  background: rgba(30,28,24,0.38); align-items: center; justify-content: center;
+}
+#form-overlay.open { display: flex; }
+#form-modal { background: white; border-radius: 12px; width: 300px; max-height: 95%; overflow-y: auto; box-shadow: 0 12px 40px rgba(0,0,0,0.22); padding: 22px 20px 18px; }
+#form-modal h3 { font-size: 15px; font-weight: 500; margin-bottom: 3px; }
+.modal-sub { font-size: 12px; color: #888; margin-bottom: 18px; }
+.form-field { margin-bottom: 13px; }
+.form-field label { display: block; font-size: 11px; font-weight: 500; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.form-field input[type=text], .form-field textarea { width: 100%; font-size: 13px; padding: 7px 10px; border: 0.5px solid #ccc; border-radius: 7px; background: #faf9f7; color: #1a1a1a; outline: none; font-family: inherit; }
+.form-field input[type=text]:focus, .form-field textarea:focus { border-color: #888; background: white; }
+.form-field textarea { resize: vertical; min-height: 60px; }
+.radio-group { display: flex; gap: 8px; }
+.radio-opt { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 10px; border: 0.5px solid #ccc; border-radius: 7px; font-size: 13px; cursor: pointer; color: #333; user-select: none; transition: border-color 0.12s, background 0.12s; }
+.radio-opt:hover { border-color: #999; }
+.radio-opt.sel { border-color: #534AB7; background: #EEEDFE; color: #3C3489; font-weight: 500; }
+.form-divider { border: none; border-top: 0.5px solid #eee; margin: 4px 0 13px; }
+.form-actions { display: flex; gap: 8px; margin-top: 16px; }
+.btn-cancel { flex: 1; padding: 8px; font-size: 13px; border: 0.5px solid #ccc; border-radius: 7px; background: white; color: #555; cursor: pointer; }
+.btn-cancel:hover { background: #f5f3ef; }
+.btn-submit { flex: 2; padding: 8px; font-size: 13px; font-weight: 500; border: none; border-radius: 7px; background: #534AB7; color: white; cursor: pointer; }
+.btn-submit:hover { background: #443da0; }
+.btn-submit:disabled { background: #c5c2e8; cursor: default; }
+
+/* ── ADMIN PANEL ── */
+#admin-overlay {
+  display: none; position: fixed; inset: 0; z-index: 9000;
+  background: rgba(20,18,14,0.5); align-items: flex-start; justify-content: center;
+  padding: 40px 16px;
+  overflow-y: auto;
+}
+#admin-overlay.open { display: flex; }
+#admin-modal {
+  background: white; border-radius: 14px; width: 100%; max-width: 860px;
+  box-shadow: 0 16px 60px rgba(0,0,0,0.25); overflow: hidden;
+  margin: auto;
+}
+#admin-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 22px; border-bottom: 0.5px solid #eee; background: #faf9f7;
+}
+#admin-topbar h2 { font-size: 16px; font-weight: 500; }
+.admin-topbar-right { display: flex; gap: 10px; align-items: center; }
+#export-btn {
+  font-size: 13px; font-weight: 500; padding: 8px 18px;
+  background: #0F6E56; color: white; border: none; border-radius: 8px; cursor: pointer;
+  display: flex; align-items: center; gap: 7px;
+}
+#export-btn:hover { background: #0c5c47; }
+#export-btn:disabled { background: #aaa; cursor: default; }
+#admin-close { font-size: 20px; color: #aaa; background: none; border: none; cursor: pointer; line-height: 1; padding: 2px 4px; }
+#admin-close:hover { color: #333; }
+
+/* Admin stats row */
+#admin-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 18px 22px; border-bottom: 0.5px solid #eee; }
+.stat-card { background: #f5f3ef; border-radius: 8px; padding: 12px 14px; }
+.stat-card .stat-val { font-size: 22px; font-weight: 500; color: #1a1a1a; }
+.stat-card .stat-label { font-size: 11px; color: #999; margin-top: 3px; }
+
+/* Admin filters */
+#admin-filters { display: flex; gap: 10px; padding: 14px 22px; border-bottom: 0.5px solid #eee; align-items: center; flex-wrap: wrap; }
+#admin-filters label { font-size: 12px; color: #666; }
+#filter-block, #filter-gender {
+  font-size: 12px; padding: 5px 10px; border: 0.5px solid #ccc; border-radius: 6px;
+  background: white; color: #333; cursor: pointer; outline: none;
+}
+#admin-search {
+  flex: 1; min-width: 140px; font-size: 12px; padding: 5px 10px;
+  border: 0.5px solid #ccc; border-radius: 6px; background: white; color: #333; outline: none;
+}
+#admin-search:focus { border-color: #888; }
+
+/* Admin table */
+#admin-table-wrap { overflow-x: auto; max-height: 420px; overflow-y: auto; }
+#admin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+#admin-table thead tr { background: #f5f3ef; position: sticky; top: 0; z-index: 1; }
+#admin-table th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 0.5px solid #e8e5e0; white-space: nowrap; cursor: pointer; user-select: none; }
+#admin-table th:hover { color: #333; }
+#admin-table th .sort-arrow { margin-left: 4px; opacity: 0.4; }
+#admin-table th.sorted .sort-arrow { opacity: 1; color: #534AB7; }
+#admin-table td { padding: 9px 14px; border-bottom: 0.5px solid #f0ede8; color: #1a1a1a; vertical-align: top; }
+#admin-table tr:last-child td { border-bottom: none; }
+#admin-table tr:hover td { background: #faf9f7; }
+.td-stage { font-weight: 500; white-space: nowrap; }
+.td-block span { font-size: 11px; padding: 2px 7px; border-radius: 8px; font-weight: 500; }
+.td-diet, .td-comments { font-size: 12px; color: #888; max-width: 140px; }
+#admin-empty { text-align: center; padding: 40px; color: #bbb; font-style: italic; font-size: 13px; }
+
+/* ── Info bar ── */
+#info-bar {
+  width: 100%; max-width: 960px; margin-bottom: 14px;
+  display: flex; gap: 12px; align-items: stretch;
+}
+.info-card {
+  background: white; border: 0.5px solid #d5d2cc; border-radius: 12px;
+  overflow: hidden; display: flex; align-items: center;
+  text-decoration: none; color: inherit;
+  transition: box-shadow 0.15s, border-color 0.15s; cursor: pointer;
+}
+.info-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.1); border-color: #bbb; }
+#video-card { flex: 1; min-width: 0; }
+#video-thumb-wrap { position: relative; width: 150px; flex-shrink: 0; background: #111; overflow: hidden; height: 84px; }
+#video-thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.88; }
+#play-btn { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.info-card-body { padding: 12px 16px; flex: 1; min-width: 0; }
+.info-card-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.6px; color: #cc0000; margin-bottom: 4px; }
+.info-card-title { font-size: 13px; font-weight: 500; color: #1a1a1a; margin-bottom: 3px; line-height: 1.4; }
+.info-card-sub { font-size: 11px; color: #999; }
+.info-card-arrow { font-size: 14px; color: #ccc; padding-right: 14px; flex-shrink: 0; }
+#website-card { width: 210px; flex-shrink: 0; }
+.website-icon { width: 32px; height: 32px; border-radius: 7px; background: #534AB7; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+#video-overlay {
+  display: none; position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.78); align-items: center; justify-content: center;
+}
+#video-overlay.open { display: flex; }
+#video-frame-wrap {
+  width: min(820px, 94vw); aspect-ratio: 16/9;
+  border-radius: 10px; overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  background: #000; position: relative;
+}
+#video-frame-wrap iframe { width: 100%; height: 100%; border: none; display: block; }
+#video-close {
+  position: absolute; top: -38px; right: 0;
+  font-size: 24px; color: white; background: none; border: none; cursor: pointer; opacity: 0.75; line-height: 1;
+}
+#video-close:hover { opacity: 1; }
+
+.bata-tooltip {
+  background: white !important;
+  border: 0.5px solid #ccc !important;
+  border-radius: 7px !important;
+  padding: 6px 10px !important;
+  font-size: 12px !important;
+  color: #1a1a1a !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important;
+  pointer-events: none;
+}
+.bata-tooltip::before { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>DPM Batavierenrace 2026 · Stage Sign-Up</h1>
+    <p>8–9 May · Nijmegen → Enschede · 175 km · 25 stages · Click a line or dot on the map to sign up</p>
+  </div>
+  <button id="admin-btn" onclick="checkAdminLogin()">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="12" height="9" rx="1.5" stroke="#555" stroke-width="1.2" fill="none"/><path d="M1 6h12" stroke="#555" stroke-width="1.2"/><path d="M4 1v4M10 1v4" stroke="#555" stroke-width="1.2" stroke-linecap="round"/></svg>
+    Admin dashboard
+  </button>
+</div>
+
+
+<!-- Info bar -->
+<div id="info-bar">
+  <!-- Video card -->
+  <div class="info-card" id="video-card" onclick="window.open('https://www.youtube.com/watch?v=Y-OaFV-EcuE','_blank')">
+    <div id="video-thumb-wrap">
+      <img src="https://img.youtube.com/vi/Y-OaFV-EcuE/hqdefault.jpg" alt="Batavierenrace video thumbnail"
+           onerror="this.src='https://img.youtube.com/vi/Y-OaFV-EcuE/default.jpg'"/>
+      <div id="play-btn">
+        <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+          <circle cx="19" cy="19" r="19" fill="rgba(0,0,0,0.55)"/>
+          <polygon points="15,12 28,19 15,26" fill="white"/>
+        </svg>
+      </div>
+    </div>
+    <div class="info-card-body">
+      <div class="info-card-label">&#9654; YouTube</div>
+      <div class="info-card-title">Wat is de Batavierenrace?</div>
+      <div class="info-card-sub">Official introduction video · opens on YouTube</div>
+    </div>
+    <div class="info-card-arrow">&#8599;</div>
+  </div>
+  <!-- Website card -->
+  <a class="info-card" id="website-card" href="https://www.batavierenrace.nl/english/" target="_blank">
+    <div class="info-card-body">
+      <div class="website-icon">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <circle cx="9" cy="9" r="7.5" stroke="white" stroke-width="1.4" fill="none"/>
+          <path d="M9 1.5C9 1.5 6 5 6 9s3 7.5 3 7.5M9 1.5C9 1.5 12 5 12 9s-3 7.5-3 7.5M1.5 9h15" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="info-card-title">Official Website</div>
+      <div class="info-card-sub">batavierenrace.nl &nbsp;&#8599;</div>
+    </div>
+  </a>
+</div>
+
+</div>
+
+<div id="app">
+  <div id="map-panel">
+    <div id="leaflet-map"></div>
+    <div id="legend">
+      <div class="legend-row"><div class="legend-dot" style="background:#534AB7"></div> Night shift (stages 1–9)</div>
+      <div class="legend-row"><div class="legend-dot" style="background:#0F6E56"></div> Morning shift (stages 10–17)</div>
+      <div class="legend-row"><div class="legend-dot" style="background:#BA7517"></div> Afternoon shift (stages 18–25)</div>
+      <div class="legend-row" style="margin-top:3px;padding-top:5px;border-top:0.5px solid #ddd;font-size:10px;color:#888;">RSC Nijmegen · Ulft · Barchem · Oude Markt</div>
+    </div>
+  </div>
+
+  <div id="detail-panel">
+    <div id="no-selection">
+      <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+        <circle cx="22" cy="22" r="20" stroke="#ccc" stroke-width="1.5" fill="none"/>
+        <circle cx="22" cy="18" r="6" stroke="#ccc" stroke-width="1.5" fill="none"/>
+        <path d="M10 36c0-6.627 5.373-12 12-12s12 5.373 12 12" stroke="#ccc" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      </svg>
+      <p>Click a dot or line on the map<br>to view details and sign up</p>
+    </div>
+  </div>
+
+  <!-- Sign-up form modal -->
+  <div id="form-overlay">
+    <div id="form-modal">
+      <h3 id="form-title">Sign up</h3>
+      <p class="modal-sub" id="form-sub"></p>
+      <div class="form-field">
+        <label>1. Full name *</label>
+        <input type="text" id="f-name" placeholder="Your name..." maxlength="40"/>
+      </div>
+      <div class="form-field">
+        <label>2. Gender *</label>
+        <div class="radio-group">
+          <div class="radio-opt" id="opt-woman" onclick="pickGender('Woman')">&#9792; Woman</div>
+          <div class="radio-opt" id="opt-man"   onclick="pickGender('Man')"  >&#9794; Man</div>
+        </div>
+      </div>
+      <hr class="form-divider"/>
+      <div class="form-field">
+        <label>3. Stage</label>
+        <div id="stage-display" style="font-size:13px;color:#534AB7;font-weight:500;padding:4px 0;"></div>
+      </div>
+      <div class="form-field">
+        <label>4. Dietary requirements</label>
+        <input type="text" id="f-diet" placeholder="e.g. vegetarian, gluten-free, none…"/>
+      </div>
+      <div class="form-field">
+        <label>5. Additional comments or suggestions</label>
+        <textarea id="f-comments" placeholder="Anything you'd like us to know…"></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="closeForm()">Cancel</button>
+        <button class="btn-submit" id="submit-btn" onclick="submitForm()">Confirm sign-up</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 2024 Highlights gallery — below the map/signup -->
+<div id="media-section" style="width:100%;max-width:960px;margin-top:14px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+    <div>
+      <span style="font-size:15px;font-weight:500;">2024 Highlights</span>
+      <span style="font-size:12px;color:#aaa;margin-left:10px;">Photos &amp; videos from 2024</span>
+    </div>
+  </div>
+  <div id="media-wrap" style="border:0.5px solid #d5d2cc;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <div id="media-empty" style="aspect-ratio:16/9;height:auto;">
+      <svg width="36" height="36" viewBox="0 0 32 32" fill="none">
+        <rect x="2" y="6" width="28" height="20" rx="3" stroke="#ccc" stroke-width="1.5" fill="none"/>
+        <circle cx="16" cy="16" r="5" stroke="#ccc" stroke-width="1.5" fill="none"/>
+        <circle cx="24" cy="10" r="2" fill="#ccc"/>
+      </svg>
+      <span>No highlights yet — check back soon!</span>
+    </div>
+    <div id="media-track" style="display:none;aspect-ratio:16/9;height:auto;"></div>
+    <button class="media-arrow" id="media-prev" style="display:none;" onclick="mediaNav(-1)">&#8592;</button>
+    <button class="media-arrow" id="media-next" style="display:none;" onclick="mediaNav(1)">&#8594;</button>
+    <div id="media-counter" style="bottom:10px;"></div>
+    <div id="media-label" style="display:none;">2024 Highlights</div>
+  </div>
+</div>
+
+
+<!-- Admin login modal -->
+<div id="login-overlay" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(20,18,14,0.5);align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:12px;width:300px;padding:28px 24px;box-shadow:0 16px 48px rgba(0,0,0,0.22);">
+    <h3 style="font-size:15px;font-weight:500;margin-bottom:4px;">Admin login</h3>
+    <p style="font-size:12px;color:#999;margin-bottom:18px;">Enter the admin password to continue</p>
+    <input type="password" id="admin-pwd-input" placeholder="Password…"
+      style="width:100%;font-size:13px;padding:8px 10px;border:0.5px solid #ccc;border-radius:7px;outline:none;font-family:inherit;margin-bottom:8px;"/>
+    <div id="login-error" style="font-size:11px;color:#c00;margin-bottom:8px;display:none;">Incorrect password. Try again.</div>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button onclick="closeLogin()" style="flex:1;padding:8px;font-size:13px;border:0.5px solid #ccc;border-radius:7px;background:white;color:#555;cursor:pointer;">Cancel</button>
+      <button onclick="submitLogin()" style="flex:2;padding:8px;font-size:13px;font-weight:500;border:none;border-radius:7px;background:#534AB7;color:white;cursor:pointer;">Login</button>
+    </div>
+  </div>
+</div>
+
+<!-- Admin panel (fixed overlay, outside #app) -->
+<div id="admin-overlay">
+  <div id="admin-modal">
+    <div id="admin-topbar">
+      <h2>Admin dashboard · Sign-up overview</h2>
+      <div class="admin-topbar-right">
+        <button id="export-btn" onclick="exportExcel()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11h10" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
+          Download Excel
+        </button>
+        <button id="admin-close" onclick="closeAdmin()">&#x2715;</button>
+      </div>
+    </div>
+
+    <!-- 照片上传区（仅管理员可见） -->
+    <div id="admin-upload-section" style="padding:14px 22px;border-bottom:0.5px solid #eee;background:#faf9f7;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div>
+          <div style="font-size:13px;font-weight:500;">2024 Highlights</div>
+          <div style="font-size:11px;color:#999;margin-top:2px;">Upload photos &amp; videos visible to all visitors</div>
+        </div>
+        <div>
+          <button onclick="document.getElementById('admin-media-input').click()"
+            style="font-size:12px;font-weight:500;padding:7px 14px;background:#534AB7;color:white;border:none;border-radius:7px;cursor:pointer;">
+            + Upload files
+          </button>
+          <input type="file" id="admin-media-input" accept="image/*,video/*" multiple style="display:none;"/>
+        </div>
+      </div>
+      <div id="admin-media-preview" style="display:flex;gap:8px;flex-wrap:wrap;min-height:20px;"></div>
+      <div id="admin-media-empty" style="font-size:12px;color:#bbb;font-style:italic;">No media uploaded yet.</div>
+    </div>
+
+    <div id="admin-stats">
+      <div class="stat-card"><div class="stat-val" id="stat-total">0</div><div class="stat-label">Total sign-ups</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-stages">0 / 25</div><div class="stat-label">Stages covered</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-women">0</div><div class="stat-label">Women</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-men">0</div><div class="stat-label">Men</div></div>
+    </div>
+
+    <div id="admin-filters">
+      <label>Filter:</label>
+      <select id="filter-block" onchange="renderTable()">
+        <option value="">All shifts</option>
+        <option value="night">Night shift</option>
+        <option value="morning">Morning shift</option>
+        <option value="afternoon">Afternoon shift</option>
+      </select>
+      <select id="filter-gender" onchange="renderTable()">
+        <option value="">All genders</option>
+        <option value="Woman">Woman</option>
+        <option value="Man">Man</option>
+      </select>
+      <input type="text" id="admin-search" placeholder="Search by name…" oninput="renderTable()"/>
+    </div>
+
+    <div id="admin-table-wrap">
+      <table id="admin-table">
+        <thead>
+          <tr>
+            <th onclick="sortTable('stageId')">#<span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable('stageName')">Stage<span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable('block')">Shift<span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable('name')">Name<span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable('gender')">Gender<span class="sort-arrow">↕</span></th>
+            <th>Dietary</th>
+            <th>Comments</th>
+            <th>Signed up at</th>
+          </tr>
+        </thead>
+        <tbody id="admin-tbody"></tbody>
+      </table>
+      <div id="admin-empty" style="display:none;">No sign-ups yet.</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+const etappes = [
+  // AVOND PLOEG (Night shift) — stages 1-9
+  {id:1,  name:"RSC Nijmegen → Radboud Sportcentrum", block:"night",     gender:"M", km:5.4,  lat:51.8218, lng:5.8674, desc:"Start at RSC Nijmegen — night shift begins"},
+  {id:2,  name:"Radboud Sportcentrum → Wylerbergmeer",block:"night",     gender:"M", km:7.3,  lat:51.8248, lng:5.8712, desc:"From Radboud Sportcentrum towards the German border"},
+  {id:3,  name:"Wylerbergmeer → Niel",                block:"night",     gender:"M", km:7.6,  lat:51.8072, lng:5.9862, desc:"Past the Wylerbergmeer lake, heading into Germany"},
+  {id:4,  name:"Niel → Dingdung",                     block:"night",     gender:"F", km:4.9,  lat:51.8028, lng:6.0501, desc:"Women's night stage through the German border area"},
+  {id:5,  name:"Dingdung → Rindern",                  block:"night",     gender:"M", km:9.9,  lat:51.7958, lng:6.1055, desc:"Longest night stage — deep into Germany"},
+  {id:6,  name:"Rindern → Oraniendeich",              block:"night",     gender:"M", km:7.3,  lat:51.7742, lng:6.1698, desc:"Through the Rhine floodplains near Kleve"},
+  {id:7,  name:"Oraniendeich → 's-Heerenberg",        block:"night",     gender:"M", km:7.8,  lat:51.8001, lng:6.2388, desc:"Crossing back towards the Dutch border"},
+  {id:8,  name:"'s-Heerenberg → Azewijn",             block:"night",     gender:"F", km:6.7,  lat:51.8742, lng:6.2498, desc:"Women's stage through the Montferland hills"},
+  {id:9,  name:"Azewijn → Ulft",                      block:"night",     gender:"F", km:5.1,  lat:51.8988, lng:6.2820, desc:"Final night stage — arrive at Ulft for Restart 1"},
+  // OCHTEND PLOEG (Morning shift) — stages 10-17
+  {id:10, name:"Ulft → Toldijk",                      block:"morning",   gender:"M", km:5.5,  lat:51.9052, lng:6.3178, desc:"RESTART 1 — morning shift starts at Ulft"},
+  {id:11, name:"Toldijk → Lireweg",                   block:"morning",   gender:"F", km:6.2,  lat:51.9280, lng:6.3598, desc:"Women's morning stage through Achterhoek countryside"},
+  {id:12, name:"Lireweg → Zwarte Veen",               block:"morning",   gender:"F", km:4.0,  lat:51.9458, lng:6.3998, desc:"Short women's stage through quiet farmland"},
+  {id:13, name:"Zwarte Veen → Heelweg",               block:"morning",   gender:"M", km:8.4,  lat:51.9578, lng:6.4378, desc:"Men's stage through the heathland of the Achterhoek"},
+  {id:14, name:"Heelweg → Wolversveen",               block:"morning",   gender:"F", km:7.1,  lat:51.9718, lng:6.4898, desc:"Women's stage over rolling Achterhoek terrain"},
+  {id:15, name:"Wolversveen → Huize Zelle",           block:"morning",   gender:"M", km:9.4,  lat:51.9888, lng:6.5318, desc:"Longest morning stage — challenging hills and forest paths"},
+  {id:16, name:"Huize Zelle → Hagenbeek",             block:"morning",   gender:"M", km:6.4,  lat:52.0128, lng:6.5878, desc:"Past the historic Huize Zelle estate"},
+  {id:17, name:"Hagenbeek → Barchem",                 block:"morning",   gender:"M", km:3.5,  lat:52.0308, lng:6.6178, desc:"Short final morning stage — arrive at Barchem for Restart 2"},
+  // MIDDAG PLOEG (Afternoon shift) — stages 18-25
+  {id:18, name:"Barchem → Nettelhorst",               block:"afternoon", gender:"M", km:8.0,  lat:52.0478, lng:6.6438, desc:"RESTART 2 — afternoon shift kicks off at Barchem"},
+  {id:19, name:"Nettelhorst → Noordijk",              block:"afternoon", gender:"M", km:7.2,  lat:52.0608, lng:6.6828, desc:"Through the Nettelhorst area heading towards Enschede"},
+  {id:20, name:"Noordijk → Middendorp",               block:"afternoon", gender:"F", km:6.0,  lat:52.0698, lng:6.7278, desc:"Women's afternoon stage through the outskirts of Enschede"},
+  {id:21, name:"Middendorp → Bentelo",                block:"afternoon", gender:"M", km:6.3,  lat:52.0758, lng:6.7658, desc:"Men's stage through the Middendorp area"},
+  {id:22, name:"Bentelo → Grolsch",                   block:"afternoon", gender:"M", km:10.7, lat:52.0818, lng:6.8098, desc:"Longest stage of the race — epic final approach to Enschede"},
+  {id:23, name:"Grolsch → Oude Markt",                block:"afternoon", gender:"F", km:7.4,  lat:52.0888, lng:6.8318, desc:"Women's stage into the heart of Enschede city centre"},
+  {id:24, name:"Oude Markt → UT track (Women)",       block:"afternoon", gender:"F", km:7.8,  lat:52.2196, lng:6.8958, desc:"RESTART 3 — women's final leg to University of Twente", final:true},
+  {id:25, name:"Oude Markt → UT track (Men & Women)", block:"afternoon", gender:"B", km:7.8,  lat:52.2196, lng:6.8968, desc:"RESTART 3 — both men's and women's final leg to University of Twente", final:true},
+];
+
+const blockColors = {night:"#534AB7", morning:"#0F6E56", afternoon:"#BA7517"};
+const blockNames  = {night:"Night shift", morning:"Morning shift", afternoon:"Afternoon shift"};
+const blockBadge  = {night:"badge-night", morning:"badge-morning", afternoon:"badge-afternoon"};
+const blockBg     = {night:"#EEEDFE", morning:"#E1F5EE", afternoon:"#FAEEDA"};
+const blockFg     = {night:"#3C3489", morning:"#085041", afternoon:"#633806"};
+
+// ── Google Apps Script API ──
+const API_URL = 'https://script.google.com/macros/s/AKfycbzhniWTgMgdfz_umRwa6Xy95I2APqjNJfOppONZ61q078Gl0I5Myvgpri1TNnd2isrKNg/exec';
+
+// allSignups: flat list for admin, runners[id] for per-stage view
+const allSignups = [];
+const runners    = {};
+etappes.forEach(e => runners[e.id] = []);
+
+let selectedId  = null;
+let formStageId = null;
+let formGender  = null;
+const markerMap = {};
+let sortCol = 'stageId', sortAsc = true;
+
+/* ── Leaflet map ── */
+const map = L.map('leaflet-map', { zoomControl:false, scrollWheelZoom:true }).setView([51.96, 6.38], 9);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', maxZoom:18
+}).addTo(map);
+
+// Draw coloured polylines per segment + dots per stage point
+const lineMap = {};  // id -> polyline
+
+function drawLines() {
+  Object.values(lineMap).forEach(l => map.removeLayer(l));
+  // 虚拟终点：UT campus
+  const finishPoint = {lat: 52.2396, lng: 6.8508}; // UT track
+  etappes.forEach((e, i) => {
+    const next = etappes[i + 1] || (i === etappes.length - 1 ? finishPoint : null);
+    if (!next) return;
+    const sel  = selectedId === e.id;
+    // 透明宽线：扩大点击区域（20px）
+    const hitLine = L.polyline([[e.lat, e.lng],[next.lat, next.lng]], {
+      color: 'transparent', weight: 20, opacity: 0, interactive: true
+    });
+    const tooltip = `<b>E${e.id}</b> ${e.name}<br><span style="font-size:11px;color:#888;">${blockNames[e.block]} · ${e.km} km · ${e.gender==='M'?'Men':e.gender==='B'?'Men & Women':'Women'}</span>`;
+    hitLine.bindTooltip(tooltip, {sticky: true, opacity: 0.97, className: 'bata-tooltip'});
+    hitLine.on('click', () => { selectedId = e.id; drawLines(); refreshDots(); showDetail(e.id); });
+    hitLine.addTo(map);
+
+    // 可见线（细，不拦截事件）
+    const line = L.polyline([[e.lat, e.lng],[next.lat, next.lng]], {
+      color:   blockColors[e.block],
+      weight:  sel ? 6 : 4,
+      opacity: sel ? 1 : 0.7,
+      interactive: false
+    });
+    line.addTo(map);
+    lineMap[e.id] = hitLine;
+  });
+}
+
+// Dot markers
+function makeDotIcon(e) {
+  const sel  = selectedId === e.id;
+  const has  = runners[e.id].length > 0;
+  const s    = sel ? 14 : 9;
+  const ring = has ? 'outline:2.5px solid rgba(216,90,48,0.5);outline-offset:1px;' : '';
+  return L.divIcon({
+    className:'',
+    html:`<div style="width:${s}px;height:${s}px;border-radius:50%;background:${blockColors[e.block]};border:2px solid white;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,0.28);${ring}"></div>`,
+    iconSize:[s,s], iconAnchor:[s/2,s/2]
+  });
+}
+
+function labelIcon(text, color) {
+  return L.divIcon({
+    className:'',
+    html:`<div style="font-size:10px;font-weight:700;color:${color};white-space:nowrap;background:rgba(255,255,255,0.93);padding:3px 8px;border-radius:5px;border:1.5px solid ${color};box-shadow:0 1px 4px rgba(0,0,0,0.15);">${text}</div>`,
+    iconSize:[0,0], iconAnchor:[0,10]
+  });
+}
+
+etappes.forEach(e => {
+  const m = L.marker([e.lat,e.lng],{icon:makeDotIcon(e),zIndexOffset:200}).addTo(map);
+  // 圆点tooltip：显示从该点出发的路段信息
+  m.bindTooltip(
+    `<b>E${e.id}</b> ${e.name}<br><span style="font-size:11px;color:#888;">${blockNames[e.block]} · ${e.km} km · ${e.gender==='M'?'Men':e.gender==='B'?'Men & Women':'Women'}</span>`,
+    {sticky: false, direction: 'top', offset: [0, -8], opacity: 0.97, className: 'bata-tooltip'}
+  );
+  m.on('click', () => { selectedId = e.id; drawLines(); refreshDots(); showDetail(e.id); });
+  markerMap[e.id] = m;
+});
+
+L.marker([etappes[0].lat,  etappes[0].lng],  {icon:labelIcon('START','#534AB7'),     zIndexOffset:500, interactive:false}).addTo(map);
+L.marker([etappes[9].lat,  etappes[9].lng],  {icon:labelIcon('RESTART 1','#0F6E56'), zIndexOffset:500, interactive:false}).addTo(map);
+L.marker([etappes[22].lat, etappes[22].lng], {icon:labelIcon('RESTART 2','#BA7517'), zIndexOffset:500, interactive:false}).addTo(map);
+L.marker([52.2396, 6.8508], {icon:labelIcon('FINISH','#BA7517'), zIndexOffset:500, interactive:false}).addTo(map);
+
+function refreshDots() { etappes.forEach(e => markerMap[e.id].setIcon(makeDotIcon(e))); }
+function refreshAll()  { drawLines(); refreshDots(); }
+
+drawLines();
+
+/* ── Detail panel ── */
+function showDetail(id) {
+  const e   = etappes.find(x => x.id === id);
+  const cnt = runners[e.id].length;
+  const panel = document.getElementById('detail-panel');
+  panel.innerHTML = `
+    <div id="detail-header">
+      <div class="stage-title-row"><h3>Stage ${e.id}: ${e.name}</h3></div>
+      <div class="stage-title-row" style="margin-top:5px;">
+        <span class="badge ${blockBadge[e.block]}">${blockNames[e.block]}</span>
+        <span class="badge badge-neutral">${e.gender==='M'?'Men':e.gender==='B'?'Men & Women':'Women'}</span>
+        <span class="badge badge-neutral">${e.km} km</span>
+      </div>
+      <div class="stage-meta">${e.desc}</div>
+    </div>
+
+    <div id="signup-area">
+      <h4>Sign up for this stage &nbsp;<span style="font-weight:400;color:#aaa;">${cnt>0?cnt+' signed up':'be the first!'}</span></h4>
+      ${e.final ? `
+      <div style="background:#faf9f7;border:0.5px solid #eee;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#534AB7;">
+        <b>Final stage — 2 runners needed</b><br>
+        <span style="color:#888;">Both a women's and men's runner start together from Oude Markt to UT track.</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <button style="flex:1;padding:8px;font-size:12px;font-weight:500;background:#EEEDFE;color:#3C3489;border:1px solid #AFA9EC;border-radius:7px;cursor:pointer;" onclick="openForm(${e.id},'F')">&#9792; Sign up (Women)</button>
+        <button style="flex:1;padding:8px;font-size:12px;font-weight:500;background:#E1F5EE;color:#085041;border:1px solid #5DCAA5;border-radius:7px;cursor:pointer;" onclick="openForm(${e.id},'M')">&#9794; Sign up (Men)</button>
+      </div>` : `
+      <button id="open-signup-btn" onclick="openForm(${e.id})">+ Sign up for Stage ${e.id}</button>`}
+      <div id="runners-list"></div>
+    </div>
+    <div id="progress-bar">
+      <div class="prog-label"><span>Team coverage</span><span id="prog-text"></span></div>
+      <div id="progress-track"><div id="progress-fill" style="width:0%"></div></div>
+    </div>`;
+  renderRunners(e.id);
+  updateProgress();
+  initMedia();
+}
+
+function renderRunners(id) {
+  const list = document.getElementById('runners-list');
+  if (!list) return;
+  if (!runners[id].length) { list.innerHTML = '<div id="empty-hint">No one signed up yet — be the first!</div>'; return; }
+  list.innerHTML = runners[id].map((r,i) => {
+    const sub = [r.gender, r.diet||null].filter(Boolean).join(' · ');
+    return `<div class="runner-tag">
+      <div class="runner-avatar">${r.name.charAt(0).toUpperCase()}</div>
+      <div class="runner-info">
+        <div class="runner-name">${r.name}</div>
+        ${sub?`<div class="runner-sub">${sub}</div>`:''}
+      </div>
+      <button class="runner-remove" onclick="removeRunner(${id},${i})">×</button>
+    </div>`;
+  }).join('');
+}
+
+function removeRunner(id, index) {
+  const removed = runners[id].splice(index, 1)[0];
+  const gi = allSignups.findIndex(s => s.stageId===id && s.name===removed.name && s.gender===removed.gender);
+  if (gi !== -1) allSignups.splice(gi, 1);
+  renderRunners(id);
+  const span = document.querySelector('#signup-area h4 span');
+  if (span) span.textContent = runners[id].length > 0 ? runners[id].length+' signed up' : 'be the first!';
+  refreshAll(); updateProgress();
+}
+
+/* ── Sign-up form ── */
+function openForm(id, preGender) {
+  formStageId = id; formGender = null;
+  const e = etappes.find(x => x.id === id);
+  document.getElementById('form-title').textContent       = `Stage ${id}: ${e.name}`;
+  document.getElementById('form-sub').textContent         = `${blockNames[e.block]} · ${e.km} km`;
+  document.getElementById('stage-display').textContent    = `Stage ${id} — ${e.name}`;
+  document.getElementById('f-name').value                 = '';
+  document.getElementById('f-diet').value                 = '';
+  document.getElementById('f-comments').value             = '';
+  document.getElementById('opt-woman').classList.remove('sel');
+  document.getElementById('opt-man').classList.remove('sel');
+  // 最后一棒预填性别并锁定
+  if (preGender) {
+    pickGender(preGender === 'F' ? 'Woman' : 'Man');
+    document.getElementById('opt-woman').style.pointerEvents = preGender === 'F' ? 'none' : 'none';
+    document.getElementById('opt-man').style.pointerEvents   = preGender === 'F' ? 'none' : 'none';
+    document.getElementById('opt-woman').style.opacity = preGender === 'F' ? '1' : '0.4';
+    document.getElementById('opt-man').style.opacity   = preGender === 'M' ? '1' : '0.4';
+  } else {
+    document.getElementById('opt-woman').style.pointerEvents = '';
+    document.getElementById('opt-man').style.pointerEvents   = '';
+    document.getElementById('opt-woman').style.opacity = '1';
+    document.getElementById('opt-man').style.opacity   = '1';
+  }
+  updateSubmitBtn();
+  document.getElementById('form-overlay').classList.add('open');
+}
+function closeForm() { document.getElementById('form-overlay').classList.remove('open'); }
+function pickGender(g) {
+  formGender = g;
+  document.getElementById('opt-woman').classList.toggle('sel', g==='Woman');
+  document.getElementById('opt-man').classList.toggle('sel',   g==='Man');
+  updateSubmitBtn();
+}
+function updateSubmitBtn() {
+  const name = (document.getElementById('f-name')||{}).value||'';
+  document.getElementById('submit-btn').disabled = !(name.trim() && formGender);
+}
+document.addEventListener('input', e => { if (e.target.id==='f-name') updateSubmitBtn(); });
+
+
+/* ── Media gallery ── */
+let mediaFiles = [];   // {url, type}
+let mediaCurrent = 0;
+
+function initMedia() {
+  renderMedia();
+}
+
+function handleMediaUpload(files) {
+  Array.from(files).forEach(file => {
+    const url  = URL.createObjectURL(file);
+    const type = file.type.startsWith('video') ? 'video' : 'image';
+    mediaFiles.push({url, type, name: file.name});
+  });
+  mediaCurrent = mediaFiles.length - 1;
+  renderMedia();
+}
+
+function renderMedia() {
+  const track   = document.getElementById('media-track');
+  const empty   = document.getElementById('media-empty');
+  const prev    = document.getElementById('media-prev');
+  const next    = document.getElementById('media-next');
+  const counter = document.getElementById('media-counter');
+  const label   = document.getElementById('media-label');
+  if (!track) return;
+
+  if (!mediaFiles.length) {
+    if (empty)   empty.style.display  = 'flex';
+    track.style.display  = 'none';
+    if (prev)    prev.style.display   = 'none';
+    if (next)    next.style.display   = 'none';
+    if (label)   label.style.display  = 'none';
+    if (counter) counter.innerHTML    = '';
+    return;
+  }
+
+  if (empty)   empty.style.display  = 'none';
+  track.style.display  = 'flex';
+  if (label)   label.style.display  = 'block';
+  if (prev)    prev.style.display   = mediaFiles.length > 1 ? 'flex' : 'none';
+  if (next)    next.style.display   = mediaFiles.length > 1 ? 'flex' : 'none';
+
+  track.innerHTML = mediaFiles.map((f, i) => {
+    if (f.type === 'video') {
+      return `<div class="media-slide"><video src="${f.url}" controls playsinline preload="metadata"></video></div>`;
+    }
+    return `<div class="media-slide"><img src="${f.url}" alt="${f.name}"/></div>`;
+  }).join('');
+
+  track.style.transform = `translateX(-${mediaCurrent * 100}%)`;
+
+  // dots
+  counter.innerHTML = mediaFiles.map((_, i) =>
+    `<div class="media-dot-ind ${i===mediaCurrent?'active':''}"></div>`
+  ).join('');
+}
+
+function mediaNav(dir) {
+  mediaCurrent = (mediaCurrent + dir + mediaFiles.length) % mediaFiles.length;
+  const track = document.getElementById('media-track');
+  if (track) track.style.transform = `translateX(-${mediaCurrent * 100}%)`;
+  document.querySelectorAll('.media-dot-ind').forEach((d,i) =>
+    d.classList.toggle('active', i === mediaCurrent)
+  );
+}
+
+function submitForm() {
+  const name     = document.getElementById('f-name').value.trim();
+  const diet     = document.getElementById('f-diet').value.trim();
+  const comments = document.getElementById('f-comments').value.trim();
+  if (!name || !formGender) return;
+
+  const e   = etappes.find(x => x.id === formStageId);
+  const now = new Date().toLocaleString('en-GB', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const record = { stageId:formStageId, stageName:e.name, block:e.block, km:e.km, name, gender:formGender, diet, comments, signedAt:now };
+
+  // 本地立即更新
+  runners[formStageId].push(record);
+  allSignups.push(record);
+  closeForm();
+  showDetail(formStageId);
+  refreshAll();
+
+  // 异步发送到 Google Sheet
+  const btn = document.getElementById('submit-btn');
+  fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({action: 'signup', ...record})
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (!res.ok) console.warn('Sheet write failed:', res.error);
+  })
+  .catch(err => console.warn('Network error:', err));
+}
+
+function updateProgress() {
+  const covered = etappes.filter(e => runners[e.id].length > 0).length;
+  const pct = Math.round(covered / 25 * 100);
+  const fill = document.getElementById('progress-fill');
+  const text = document.getElementById('prog-text');
+  if (fill) fill.style.width = pct + '%';
+  if (text) text.textContent = `${covered} / 25 stages covered`;
+}
+
+document.getElementById('form-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeForm();
+});
+
+/* ── Admin panel ── */
+const ADMIN_PASSWORD = 'bata2026';   // ← 在这里修改管理员密码
+let adminLoggedIn = false;
+
+function checkAdminLogin() {
+  if (adminLoggedIn) {
+    openAdmin();
+  } else {
+    document.getElementById('admin-pwd-input').value = '';
+    document.getElementById('login-error').style.display = 'none';
+    const ov = document.getElementById('login-overlay');
+    ov.style.display = 'flex';
+    setTimeout(() => document.getElementById('admin-pwd-input').focus(), 80);
+  }
+}
+
+function submitLogin() {
+  const pwd = document.getElementById('admin-pwd-input').value;
+  if (pwd === ADMIN_PASSWORD) {
+    adminLoggedIn = true;
+    closeLogin();
+    openAdmin();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('admin-pwd-input').value = '';
+    document.getElementById('admin-pwd-input').focus();
+  }
+}
+
+function closeLogin() {
+  document.getElementById('login-overlay').style.display = 'none';
+}
+
+// Enter键提交
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('login-overlay').style.display === 'flex') {
+    submitLogin();
+  }
+});
+
+function openAdmin() {
+  renderStats();
+  renderTable();
+  renderAdminMediaPreview();
+
+  // 绑定上传（只绑一次）
+  const inp = document.getElementById('admin-media-input');
+  if (inp && !inp._bound) {
+    inp.addEventListener('change', e => {
+      handleMediaUpload(e.target.files);
+      renderAdminMediaPreview();
+    });
+    inp._bound = true;
+  }
+  document.getElementById('admin-overlay').classList.add('open');
+
+  // 从 Google Sheet 拉取最新数据
+  const tbody = document.getElementById('admin-tbody');
+  const progText = document.getElementById('prog-text');
+  if (tbody) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#aaa;font-size:13px;">Loading from Google Sheet…</td></tr>';
+  }
+
+  fetch(API_URL + '?action=getSignups')
+    .then(r => r.json())
+    .then(res => {
+      if (res.ok && res.data.length) {
+        // 合并 Sheet 数据到 allSignups（去重：以 name+stageId+signedAt 为 key）
+        res.data.forEach(row => {
+          const exists = allSignups.some(s =>
+            s.name === row['Name'] &&
+            String(s.stageId) === String(row['Stage #']) &&
+            s.signedAt === row['Signed up at']
+          );
+          if (!exists) {
+            const record = {
+              stageId:   Number(row['Stage #']),
+              stageName: row['Stage Name'],
+              block:     row['Shift'] === 'Night shift' ? 'night' : row['Shift'] === 'Morning shift' ? 'morning' : 'afternoon',
+              km:        row['Distance (km)'],
+              name:      row['Name'],
+              gender:    row['Gender'],
+              diet:      row['Dietary Requirements'],
+              comments:  row['Comments'],
+              signedAt:  row['Signed up at']
+            };
+            allSignups.push(record);
+            if (!runners[record.stageId]) runners[record.stageId] = [];
+            if (!runners[record.stageId].some(r => r.name === record.name && r.signedAt === record.signedAt)) {
+              runners[record.stageId].push(record);
+            }
+          }
+        });
+      }
+      renderStats();
+      renderTable();
+      refreshAll();
+    })
+    .catch(err => {
+      console.warn('Failed to load from Sheet:', err);
+      renderStats();
+      renderTable();
+    });
+}
+
+function renderAdminMediaPreview() {
+  const preview = document.getElementById('admin-media-preview');
+  const empty   = document.getElementById('admin-media-empty');
+  if (!preview) return;
+  if (!mediaFiles.length) {
+    preview.style.display = 'none';
+    empty.style.display   = 'block';
+    return;
+  }
+  empty.style.display   = 'none';
+  preview.style.display = 'flex';
+  preview.innerHTML = mediaFiles.map((f, i) => `
+    <div style="position:relative;width:72px;height:56px;border-radius:6px;overflow:hidden;border:0.5px solid #ddd;flex-shrink:0;">
+      ${f.type==='video'
+        ? `<video src="${f.url}" style="width:100%;height:100%;object-fit:cover;"></video>
+           <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3);font-size:16px;color:white;pointer-events:none;">&#9654;</div>`
+        : `<img src="${f.url}" style="width:100%;height:100%;object-fit:cover;"/>`}
+      <button onclick="removeMedia(${i})" style="position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,0.55);color:white;border:none;cursor:pointer;font-size:10px;line-height:1;display:flex;align-items:center;justify-content:center;">&#x2715;</button>
+    </div>`).join('');
+}
+
+function removeMedia(index) {
+  URL.revokeObjectURL(mediaFiles[index].url);
+  mediaFiles.splice(index, 1);
+  if (mediaCurrent >= mediaFiles.length) mediaCurrent = Math.max(0, mediaFiles.length - 1);
+  renderAdminMediaPreview();
+  renderMedia();
+}
+function closeAdmin() { document.getElementById('admin-overlay').classList.remove('open'); }
+document.getElementById('admin-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeAdmin();
+});
+
+function renderStats() {
+  const total  = allSignups.length;
+  const stages = new Set(allSignups.map(s => s.stageId)).size;
+  const women  = allSignups.filter(s => s.gender==='Woman').length;
+  const men    = allSignups.filter(s => s.gender==='Man').length;
+  document.getElementById('stat-total').textContent  = total;
+  document.getElementById('stat-stages').textContent = `${stages} / 25`;
+  document.getElementById('stat-women').textContent  = women;
+  document.getElementById('stat-men').textContent    = men;
+  document.getElementById('export-btn').disabled     = total === 0;
+}
+
+function getFiltered() {
+  const block  = document.getElementById('filter-block').value;
+  const gender = document.getElementById('filter-gender').value;
+  const search = document.getElementById('admin-search').value.toLowerCase();
+  return allSignups.filter(s =>
+    (!block  || s.block  === block) &&
+    (!gender || s.gender === gender) &&
+    (!search || s.name.toLowerCase().includes(search))
+  );
+}
+
+function sortTable(col) {
+  if (sortCol === col) { sortAsc = !sortAsc; } else { sortCol = col; sortAsc = true; }
+  renderTable();
+}
+
+function renderTable() {
+  renderStats();
+  let rows = getFiltered();
+  rows.sort((a,b) => {
+    let av = a[sortCol]||'', bv = b[sortCol]||'';
+    if (typeof av === 'number') return sortAsc ? av-bv : bv-av;
+    return sortAsc ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
+  });
+
+  // update sort arrows
+  document.querySelectorAll('#admin-table th').forEach(th => th.classList.remove('sorted'));
+  const cols = ['stageId','stageName','block','name','gender'];
+  const idx  = cols.indexOf(sortCol);
+  const ths  = document.querySelectorAll('#admin-table th');
+  if (idx >= 0) {
+    ths[idx].classList.add('sorted');
+    ths[idx].querySelector('.sort-arrow').textContent = sortAsc ? '↑' : '↓';
+  }
+
+  const tbody = document.getElementById('admin-tbody');
+  const empty = document.getElementById('admin-empty');
+  if (!rows.length) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  tbody.innerHTML = rows.map(s => `
+    <tr>
+      <td class="td-stage">${s.stageId}</td>
+      <td class="td-stage">${s.stageName}</td>
+      <td class="td-block"><span style="background:${blockBg[s.block]};color:${blockFg[s.block]};font-size:11px;padding:2px 8px;border-radius:8px;font-weight:500;">${blockNames[s.block]}</span></td>
+      <td>${s.name}</td>
+      <td>${s.gender}</td>
+      <td class="td-diet">${s.diet||'—'}</td>
+      <td class="td-comments">${s.comments||'—'}</td>
+      <td style="font-size:11px;color:#aaa;white-space:nowrap;">${s.signedAt}</td>
+    </tr>`).join('');
+}
+
+/* ── Excel export ── */
+function exportExcel() {
+  if (!allSignups.length) return;
+
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1: All sign-ups
+  const allRows = [
+    ['Stage #', 'Stage name', 'Shift', 'Distance (km)', 'Name', 'Gender', 'Dietary requirements', 'Comments', 'Signed up at'],
+    ...allSignups.map(s => [s.stageId, s.stageName, blockNames[s.block], s.km, s.name, s.gender, s.diet||'', s.comments||'', s.signedAt])
+  ];
+  const ws1 = XLSX.utils.aoa_to_sheet(allRows);
+  ws1['!cols'] = [6,28,16,14,20,10,28,32,20].map(w => ({wch:w}));
+  // Header row style
+  const headerRange = XLSX.utils.decode_range(ws1['!ref']);
+  for (let c = headerRange.s.c; c <= headerRange.e.c; c++) {
+    const cell = ws1[XLSX.utils.encode_cell({r:0, c})];
+    if (cell) cell.s = { font:{bold:true}, fill:{fgColor:{rgb:'E8E5FF'}}, alignment:{horizontal:'center'} };
+  }
+  XLSX.utils.book_append_sheet(wb, ws1, 'All sign-ups');
+
+  // Sheet 2: Per-stage summary
+  const summaryRows = [
+    ['Stage #', 'Stage name', 'Shift', 'Distance (km)', 'Stage gender', 'Total signed up', 'Women', 'Men'],
+    ...etappes.map(e => {
+      const r = runners[e.id];
+      return [e.id, e.name, blockNames[e.block], e.km, e.gender==='M'?'Men':'Women',
+        r.length, r.filter(x=>x.gender==='Woman').length, r.filter(x=>x.gender==='Man').length];
+    })
+  ];
+  const ws2 = XLSX.utils.aoa_to_sheet(summaryRows);
+  ws2['!cols'] = [6,28,16,14,14,14,8,8].map(w => ({wch:w}));
+  XLSX.utils.book_append_sheet(wb, ws2, 'Stage summary');
+
+  // Sheet 3: Dietary overview
+  const dietMap = {};
+  allSignups.forEach(s => {
+    const key = s.diet || 'None / not specified';
+    dietMap[key] = (dietMap[key]||0) + 1;
+  });
+  const dietRows = [
+    ['Dietary requirement', 'Count'],
+    ...Object.entries(dietMap).sort((a,b) => b[1]-a[1])
+  ];
+  const ws3 = XLSX.utils.aoa_to_sheet(dietRows);
+  ws3['!cols'] = [{wch:30},{wch:10}];
+  XLSX.utils.book_append_sheet(wb, ws3, 'Dietary overview');
+
+  const date = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `batavierenrace2026_signups_${date}.xlsx`);
+}
+
+function closeVideo() {
+  document.getElementById('yt-iframe').src = '';
+  document.getElementById('video-overlay').classList.remove('open');
+}
+</script>
+</body>
+</html>
