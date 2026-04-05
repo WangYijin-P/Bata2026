@@ -594,7 +594,8 @@ function drawLines() {
     });
     const tooltip = `<b>E${e.id}</b> ${e.name}<br><span style="font-size:11px;color:#888;">${blockNames[e.block]} · ${e.km} km · ${e.gender==='M'?'Men':e.gender==='B'?'Men & Women':'Women'}</span>`;
     hitLine.bindTooltip(tooltip, {sticky: true, opacity: 0.97, className: 'bata-tooltip'});
-    hitLine.on('click', () => { selectedId = e.id; drawLines(); refreshDots(); showDetail(e.id); });
+    hitLine.on('click', () => { selectedId = e.id; drawLines();
+loadMediaFromDrive(); refreshDots(); showDetail(e.id); });
     hitLine.addTo(map);
 
     // 可见线（细，不拦截事件）
@@ -637,7 +638,8 @@ etappes.forEach(e => {
     `<b>E${e.id}</b> ${e.name}<br><span style="font-size:11px;color:#888;">${blockNames[e.block]} · ${e.km} km · ${e.gender==='M'?'Men':e.gender==='B'?'Men & Women':'Women'}</span>`,
     {sticky: false, direction: 'top', offset: [0, -8], opacity: 0.97, className: 'bata-tooltip'}
   );
-  m.on('click', () => { selectedId = e.id; drawLines(); refreshDots(); showDetail(e.id); });
+  m.on('click', () => { selectedId = e.id; drawLines();
+loadMediaFromDrive(); refreshDots(); showDetail(e.id); });
   markerMap[e.id] = m;
 });
 
@@ -647,9 +649,11 @@ L.marker([etappes[22].lat, etappes[22].lng], {icon:labelIcon('RESTART 2','#BA751
 L.marker([52.2396, 6.8508], {icon:labelIcon('FINISH','#BA7517'), zIndexOffset:500, interactive:false}).addTo(map);
 
 function refreshDots() { etappes.forEach(e => markerMap[e.id].setIcon(makeDotIcon(e))); }
-function refreshAll()  { drawLines(); refreshDots(); }
+function refreshAll()  { drawLines();
+loadMediaFromDrive(); refreshDots(); }
 
 drawLines();
+loadMediaFromDrive();
 
 /* ── Detail panel ── */
 function showDetail(id) {
@@ -767,6 +771,26 @@ function initMedia() {
   renderMedia();
 }
 
+// 页面加载时自动从 Drive 拉取媒体（所有人可见）
+function loadMediaFromDrive() {
+  fetch(API_URL + '?action=getMedia')
+    .then(r => r.json())
+    .then(res => {
+      if (res.ok && res.media && res.media.length) {
+        // 清空并替换为 Drive 里的文件
+        mediaFiles = res.media.map(f => ({
+          url:  f.url,
+          type: f.type,
+          name: f.name,
+          fromDrive: true
+        }));
+        mediaCurrent = 0;
+        renderMedia();
+      }
+    })
+    .catch(err => console.warn('Could not load media from Drive:', err));
+}
+
 function handleMediaUpload(files) {
   Array.from(files).forEach(file => {
     const url  = URL.createObjectURL(file);
@@ -804,6 +828,9 @@ function renderMedia() {
 
   track.innerHTML = mediaFiles.map((f, i) => {
     if (f.type === 'video') {
+      if (f.fromDrive) {
+        return `<div class="media-slide"><iframe src="${f.url}" style="width:100%;height:100%;border:none;" allowfullscreen></iframe></div>`;
+      }
       return `<div class="media-slide"><video src="${f.url}" controls playsinline preload="metadata"></video></div>`;
     }
     return `<div class="media-slide"><img src="${f.url}" alt="${f.name}"/></div>`;
