@@ -780,6 +780,7 @@ function loadMediaFromDrive() {
           url:  f.url,
           type: f.type,
           name: f.name,
+          id:   f.id,
           fromDrive: true
         }));
         mediaCurrent = 0;
@@ -832,9 +833,14 @@ function renderMedia() {
       return `<div class="media-slide"><video src="${f.url}" controls playsinline preload="metadata"></video></div>`;
     }
     const imgUrl = f.fromDrive
-      ? f.url.replace('thumbnail?id=', 'uc?export=view&id=').replace('&sz=w1200', '')
+      ? 'https://drive.google.com/thumbnail?id=' + f.id + '&sz=w1200'
       : f.url;
-    return `<div class="media-slide"><img src="${imgUrl}" alt="${f.name}" style="width:100%;height:100%;object-fit:contain;background:#111;"/></div>`;
+    return `<div class="media-slide">
+      <img src="${imgUrl}" alt="${f.name}"
+        style="width:100%;height:100%;object-fit:contain;background:#111;"
+        loading="lazy"
+        onerror="this.src='https://drive.google.com/thumbnail?id=${f.id}&sz=w800'"/>
+    </div>`;
   }).join('');
 
   track.style.transform = `translateX(-${mediaCurrent * 100}%)`;
