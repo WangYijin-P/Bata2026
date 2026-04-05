@@ -595,7 +595,7 @@ function drawLines() {
     const tooltip = `<b>E${e.id}</b> ${e.name}<br><span style="font-size:11px;color:#888;">${blockNames[e.block]} · ${e.km} km · ${e.gender==='M'?'Men':e.gender==='B'?'Men & Women':'Women'}</span>`;
     hitLine.bindTooltip(tooltip, {sticky: true, opacity: 0.97, className: 'bata-tooltip'});
     hitLine.on('click', () => { selectedId = e.id; drawLines();
-loadMediaFromDrive(); refreshDots(); showDetail(e.id); });
+setTimeout(loadMediaFromDrive, 500); refreshDots(); showDetail(e.id); });
     hitLine.addTo(map);
 
     // 可见线（细，不拦截事件）
@@ -638,8 +638,7 @@ etappes.forEach(e => {
     `<b>E${e.id}</b> ${e.name}<br><span style="font-size:11px;color:#888;">${blockNames[e.block]} · ${e.km} km · ${e.gender==='M'?'Men':e.gender==='B'?'Men & Women':'Women'}</span>`,
     {sticky: false, direction: 'top', offset: [0, -8], opacity: 0.97, className: 'bata-tooltip'}
   );
-  m.on('click', () => { selectedId = e.id; drawLines();
-loadMediaFromDrive(); refreshDots(); showDetail(e.id); });
+  m.on('click', () => { selectedId = e.id; drawLines(); refreshDots(); showDetail(e.id); });
   markerMap[e.id] = m;
 });
 
@@ -649,11 +648,10 @@ L.marker([etappes[22].lat, etappes[22].lng], {icon:labelIcon('RESTART 2','#BA751
 L.marker([52.2396, 6.8508], {icon:labelIcon('FINISH','#BA7517'), zIndexOffset:500, interactive:false}).addTo(map);
 
 function refreshDots() { etappes.forEach(e => markerMap[e.id].setIcon(makeDotIcon(e))); }
-function refreshAll()  { drawLines();
-loadMediaFromDrive(); refreshDots(); }
+function refreshAll()  { drawLines(); refreshDots(); }
 
 drawLines();
-loadMediaFromDrive();
+setTimeout(loadMediaFromDrive, 500);
 
 /* ── Detail panel ── */
 function showDetail(id) {
