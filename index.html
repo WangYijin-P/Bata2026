@@ -620,8 +620,7 @@ function drawLines() {
     });
     const tooltip = `<b>E${e.id}</b> ${e.name}<br><span style="font-size:11px;color:#888;">${blockNames[e.block]} · ${e.km} km · ${e.gender==='M'?'Men':e.gender==='B'?'Men & Women':'Women'}</span>`;
     hitLine.bindTooltip(tooltip, {sticky: true, opacity: 0.97, className: 'bata-tooltip'});
-    hitLine.on('click', () => { selectedId = e.id; drawLines();
-setTimeout(loadMediaFromDrive, 500); refreshDots(); showDetail(e.id); });
+    hitLine.on('click', () => { selectedId = e.id; drawLines(); refreshDots(); showDetail(e.id); });
     hitLine.addTo(map);
 
     // 可见线（细，不拦截事件）
@@ -676,8 +675,10 @@ L.marker([52.2396, 6.8508], {icon:labelIcon('FINISH · UT track','#BA7517'), zIn
 function refreshDots() { etappes.forEach(e => markerMap[e.id].setIcon(makeDotIcon(e))); }
 function refreshAll()  { drawLines(); refreshDots(); }
 
-drawLines();
-setTimeout(loadMediaFromDrive, 500);
+window.addEventListener('load', function() {
+  drawLines();
+  setTimeout(loadMediaFromDrive, 800);
+});
 
 /* ── Detail panel ── */
 function showDetail(id) {
