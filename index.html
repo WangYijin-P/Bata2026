@@ -162,6 +162,7 @@ body {
 .radio-opt { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 10px; border: 0.5px solid #ccc; border-radius: 7px; font-size: 13px; cursor: pointer; color: #333; user-select: none; transition: border-color 0.12s, background 0.12s; }
 .radio-opt:hover { border-color: #999; }
 .radio-opt.sel { border-color: #534AB7; background: #EEEDFE; color: #3C3489; font-weight: 500; }
+.radio-opt.sel-backup { border-color: #BA7517; background: #FAEEDA; color: #633806; font-weight: 500; }
 .form-divider { border: none; border-top: 0.5px solid #eee; margin: 4px 0 13px; }
 .form-actions { display: flex; gap: 8px; margin-top: 16px; }
 .btn-cancel { flex: 1; padding: 8px; font-size: 13px; border: 0.5px solid #ccc; border-radius: 7px; background: white; color: #555; cursor: pointer; }
@@ -347,7 +348,7 @@ body {
       <div class="legend-row"><div class="legend-dot" style="background:#534AB7"></div> Night shift (stages 1–9)</div>
       <div class="legend-row"><div class="legend-dot" style="background:#0F6E56"></div> Morning shift (stages 10–17)</div>
       <div class="legend-row"><div class="legend-dot" style="background:#BA7517"></div> Afternoon shift (stages 18–25)</div>
-      <div class="legend-row" style="margin-top:3px;padding-top:5px;border-top:0.5px solid #ddd;font-size:10px;color:#888;">RSC Nijmegen · Ulft · Barchem · Oude Markt</div>
+      <div class="legend-row" style="margin-top:3px;padding-top:5px;border-top:0.5px solid #ddd;font-size:10px;color:#888;">RSC Nijmegen · Ulft · Barchem · UT track</div>
     </div>
   </div>
 
@@ -384,11 +385,25 @@ body {
         <div id="stage-display" style="font-size:13px;color:#534AB7;font-weight:500;padding:4px 0;"></div>
       </div>
       <div class="form-field">
-        <label>4. Dietary requirements</label>
+        <label>4. Availability</label>
+        <div style="display:flex;gap:8px;">
+          <div class="radio-opt sel" id="opt-committed" onclick="pickAvailability('committed')" style="flex:1;">
+            &#10003; Committed to this stage
+          </div>
+          <div class="radio-opt" id="opt-backup" onclick="pickAvailability('backup')" style="flex:1;">
+            &#9679; Backup / Flexible
+          </div>
+        </div>
+        <div id="backup-hint" style="display:none;font-size:11px;color:#888;margin-top:6px;padding:6px 8px;background:#faf9f7;border-radius:6px;border-left:3px solid #BA7517;">
+          You'll be on the backup list — we'll contact you if we need a runner for any stage.
+        </div>
+      </div>
+      <div class="form-field">
+        <label>5. Dietary requirements</label>
         <input type="text" id="f-diet" placeholder="e.g. vegetarian, gluten-free, none…"/>
       </div>
       <div class="form-field">
-        <label>5. Additional comments or suggestions</label>
+        <label>6. Additional comments or suggestions</label>
         <textarea id="f-comments" placeholder="Anything you'd like us to know…"></textarea>
       </div>
       <div class="form-actions">
@@ -645,7 +660,7 @@ etappes.forEach(e => {
 L.marker([etappes[0].lat,  etappes[0].lng],  {icon:labelIcon('START','#534AB7'),     zIndexOffset:500, interactive:false}).addTo(map);
 L.marker([etappes[9].lat,  etappes[9].lng],  {icon:labelIcon('RESTART 1','#0F6E56'), zIndexOffset:500, interactive:false}).addTo(map);
 L.marker([etappes[22].lat, etappes[22].lng], {icon:labelIcon('RESTART 2','#BA7517'), zIndexOffset:500, interactive:false}).addTo(map);
-L.marker([52.2396, 6.8508], {icon:labelIcon('FINISH','#BA7517'), zIndexOffset:500, interactive:false}).addTo(map);
+L.marker([52.2396, 6.8508], {icon:labelIcon('FINISH · UT track','#BA7517'), zIndexOffset:500, interactive:false}).addTo(map);
 
 function refreshDots() { etappes.forEach(e => markerMap[e.id].setIcon(makeDotIcon(e))); }
 function refreshAll()  { drawLines(); refreshDots(); }
@@ -697,6 +712,7 @@ function renderRunners(id) {
   if (!list) return;
   if (!runners[id].length) { list.innerHTML = '<div id="empty-hint">No one signed up yet — be the first!</div>'; return; }
   list.innerHTML = runners[id].map((r,i) => {
+    const backupTag = r.availability === 'backup' ? '<span style="font-size:10px;background:#FAEEDA;color:#633806;padding:1px 6px;border-radius:4px;font-weight:500;">Backup</span>' : '';
     const sub = [r.gender, r.diet||null].filter(Boolean).join(' · ');
     return `<div class="runner-tag">
       <div class="runner-avatar">${r.name.charAt(0).toUpperCase()}</div>
@@ -731,6 +747,7 @@ function openForm(id, preGender) {
   document.getElementById('f-comments').value             = '';
   document.getElementById('opt-woman').classList.remove('sel');
   document.getElementById('opt-man').classList.remove('sel');
+  pickAvailability('committed');
   // 最后一棒预填性别并锁定
   if (preGender) {
     pickGender(preGender === 'F' ? 'Woman' : 'Man');
@@ -748,6 +765,24 @@ function openForm(id, preGender) {
   document.getElementById('form-overlay').classList.add('open');
 }
 function closeForm() { document.getElementById('form-overlay').classList.remove('open'); }
+function pickAvailability(val) {
+  window.formAvailability = val;
+  const committed = document.getElementById('opt-committed');
+  const backup    = document.getElementById('opt-backup');
+  const hint      = document.getElementById('backup-hint');
+  if (!committed) return;
+  if (val === 'backup') {
+    committed.classList.remove('sel');
+    backup.classList.remove('sel');
+    backup.classList.add('sel-backup');
+    hint.style.display = 'block';
+  } else {
+    backup.classList.remove('sel-backup');
+    committed.classList.add('sel');
+    hint.style.display = 'none';
+  }
+}
+
 function pickGender(g) {
   formGender = g;
   document.getElementById('opt-woman').classList.toggle('sel', g==='Woman');
@@ -868,7 +903,8 @@ function submitForm() {
 
   const e   = etappes.find(x => x.id === formStageId);
   const now = new Date().toLocaleString('en-GB', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  const record = { stageId:formStageId, stageName:e.name, block:e.block, km:e.km, name, gender:formGender, diet, comments, signedAt:now };
+  const availability = window.formAvailability || 'committed';
+  const record = { stageId:formStageId, stageName:e.name, block:e.block, km:e.km, name, gender:formGender, diet, comments, availability, signedAt:now };
 
   // 本地立即更新
   runners[formStageId].push(record);
