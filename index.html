@@ -456,11 +456,17 @@ body {
 
 <!-- Stage overview -->
 <div id="stages-section">
-  <div class="sec-header">
-    <h2>All 25 Stages</h2>
-    <span id="stages-covered"></span>
+  <div class="sec-header" onclick="toggleStages()" style="cursor:pointer;user-select:none;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <h2>All 25 Stages</h2>
+      <span id="stages-covered"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:12px;color:#aaa;" id="stages-toggle-hint">Click to expand</span>
+      <span id="stages-chevron" style="font-size:16px;color:#aaa;transition:transform 0.25s;">&#8964;</span>
+    </div>
   </div>
-  <div id="stages-wrap">
+  <div id="stages-wrap" style="display:none;">
     <table id="stages-table">
       <thead>
         <tr>
@@ -779,28 +785,62 @@ function renderStagesTable() {
   const cnt_covered = etappes.filter(e => (runners[e.id]||[]).length > 0).length;
   if (covered) covered.textContent = cnt_covered + ' / 25 stages have runners';
 
-  tbody.innerHTML = etappes.map(e => {
+  // E24 和 E25 合并成一行显示
+  const rows = [];
+  let i = 0;
+  while (i < etappes.length) {
+    const e = etappes[i];
+    if (e.id === 24) {
+      // 合并 E24 + E25
+      const e25 = etappes[i + 1];
+      const rList = [...(runners[24]||[]), ...(runners[25]||[])];
+      const runnersHtml = rList.length
+        ? rList.map(r => `<span class="st-runner-tag">${r.name} <span style="font-size:9px;opacity:0.7;">(${r.gender})</span></span>`).join(' ')
+        : '<span class="st-empty">No one yet</span>';
+      rows.push(`<tr>
+        <td class="st-num">E24–25</td>
+        <td class="st-name">Oude Markt → UT track</td>
+        <td><span class="badge badge-afternoon">${blockNames['afternoon']}</span></td>
+        <td style="color:#888;white-space:nowrap;">7.8 km</td>
+        <td style="color:#888;">Men &amp; Women</td>
+        <td><div class="st-runners">${runnersHtml}</div></td>
+        <td style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="st-signup-btn st-signup-final" onclick="openFormFromTable(24,'F')">&#9792; Women</button>
+          <button class="st-signup-btn st-signup-final" onclick="openFormFromTable(25,'M')">&#9794; Men</button>
+        </td>
+      </tr>`);
+      i += 2;
+      continue;
+    }
     const rList    = runners[e.id] || [];
     const blockCls = e.block==='night' ? 'badge-night' : e.block==='morning' ? 'badge-morning' : 'badge-afternoon';
     const genderLbl = e.gender==='M' ? 'Men' : e.gender==='B' ? 'Men & Women' : 'Women';
     const runnersHtml = rList.length
       ? rList.map(r => `<span class="st-runner-tag">${r.name}</span>`).join(' ')
       : '<span class="st-empty">No one yet</span>';
-    const btnCls   = e.final ? 'st-signup-btn st-signup-final' : 'st-signup-btn';
-    const btnClick = e.final
-      ? `openFormFromTable(${e.id},'F')`
-      : `openFormFromTable(${e.id})`;
-
-    return `<tr>
+    rows.push(`<tr>
       <td class="st-num">E${e.id}</td>
       <td class="st-name">${e.name}</td>
       <td><span class="badge ${blockCls}">${blockNames[e.block]}</span></td>
       <td style="color:#888;white-space:nowrap;">${e.km} km</td>
       <td style="color:#888;">${genderLbl}</td>
       <td><div class="st-runners">${runnersHtml}</div></td>
-      <td><button class="${btnCls}" onclick="${btnClick}">Sign up</button></td>
-    </tr>`;
-  }).join('');
+      <td><button class="st-signup-btn" onclick="openFormFromTable(${e.id})">Sign up</button></td>
+    </tr>`);
+    i++;
+  }
+  tbody.innerHTML = rows.join('');
+}
+
+
+function toggleStages() {
+  const wrap  = document.getElementById('stages-wrap');
+  const chev  = document.getElementById('stages-chevron');
+  const hint  = document.getElementById('stages-toggle-hint');
+  const open  = wrap.style.display !== 'none';
+  wrap.style.display  = open ? 'none' : 'block';
+  chev.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
+  hint.textContent     = open ? 'Click to expand' : 'Click to collapse';
 }
 
 function openFormFromTable(id, preGender) {
