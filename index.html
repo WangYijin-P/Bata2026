@@ -26,7 +26,7 @@ body {
 
 /* ── Main app ── */
 #app {
-  display: flex; height: 620px;
+  display: flex; height: 640px;
   border: 0.5px solid #d5d2cc; border-radius: 14px; overflow: hidden;
   width: 100%; max-width: 960px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.07);
@@ -286,6 +286,45 @@ body {
   pointer-events: none;
 }
 .bata-tooltip::before { display: none !important; }
+
+/* ── Stage list ── */
+#stage-list-section { width:100%; max-width:960px; margin-top:14px; }
+#stage-list-section h2 { font-size:15px; font-weight:500; margin-bottom:10px; }
+#stage-list-table { width:100%; border-collapse:collapse; background:white; border:0.5px solid #d5d2cc; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+#stage-list-table thead tr { background:#f5f3ef; }
+#stage-list-table th { padding:10px 14px; text-align:left; font-size:11px; font-weight:500; color:#888; text-transform:uppercase; letter-spacing:0.4px; border-bottom:0.5px solid #e8e5e0; white-space:nowrap; }
+#stage-list-table td { padding:9px 14px; border-bottom:0.5px solid #f0ede8; font-size:13px; color:#1a1a1a; vertical-align:middle; }
+#stage-list-table tr:last-child td { border-bottom:none; }
+#stage-list-table tr:hover td { background:#faf9f7; cursor:pointer; }
+.sl-signup-btn { font-size:11px; padding:4px 12px; border:0.5px solid #534AB7; border-radius:6px; background:white; color:#534AB7; cursor:pointer; white-space:nowrap; }
+.sl-signup-btn:hover { background:#EEEDFE; }
+.sl-final-btn { border-color:#BA7517; color:#BA7517; }
+.sl-final-btn:hover { background:#FAEEDA; }
+.sl-count { display:inline-block; font-size:10px; background:#f0ede8; color:#888; padding:2px 7px; border-radius:8px; margin-left:6px; }
+.sl-count.has-runner { background:#EEEDFE; color:#534AB7; }
+
+
+/* ── Stage overview table ── */
+#stages-section { width:100%; max-width:960px; margin-top:14px; }
+#stages-section .sec-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+#stages-section .sec-header h2 { font-size:15px; font-weight:500; }
+#stages-section .sec-header span { font-size:12px; color:#aaa; }
+#stages-wrap { background:white; border:0.5px solid #d5d2cc; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+#stages-table { width:100%; border-collapse:collapse; font-size:13px; }
+#stages-table thead tr { background:#f5f3ef; position:sticky; top:0; }
+#stages-table th { padding:10px 14px; text-align:left; font-size:11px; font-weight:500; color:#888; text-transform:uppercase; letter-spacing:0.4px; border-bottom:0.5px solid #e8e5e0; white-space:nowrap; }
+#stages-table td { padding:10px 14px; border-bottom:0.5px solid #f5f3ef; vertical-align:middle; }
+#stages-table tr:last-child td { border-bottom:none; }
+#stages-table tr:hover td { background:#faf9f7; }
+.st-num { font-size:12px; font-weight:600; color:#bbb; }
+.st-name { font-weight:500; }
+.st-runners { display:flex; flex-direction:column; gap:3px; }
+.st-runner-tag { font-size:11px; color:#534AB7; background:#EEEDFE; padding:2px 8px; border-radius:6px; display:inline-block; }
+.st-empty { font-size:11px; color:#ccc; font-style:italic; }
+.st-signup-btn { font-size:11px; padding:5px 14px; border:0.5px solid #534AB7; border-radius:6px; background:white; color:#534AB7; cursor:pointer; white-space:nowrap; }
+.st-signup-btn:hover { background:#EEEDFE; }
+.st-signup-final { border-color:#BA7517; color:#BA7517; }
+.st-signup-final:hover { background:#FAEEDA; }
 </style>
 </head>
 <body>
@@ -409,6 +448,33 @@ body {
       style="white-space:nowrap;padding:10px 20px;font-size:13px;font-weight:500;background:#FAEEDA;color:#633806;border:1px solid #BA7517;border-radius:8px;cursor:pointer;flex-shrink:0;">
       &#9679; Sign up as Backup
     </button>
+  </div>
+</div>
+
+
+
+
+<!-- Stage overview -->
+<div id="stages-section">
+  <div class="sec-header">
+    <h2>All 25 Stages</h2>
+    <span id="stages-covered"></span>
+  </div>
+  <div id="stages-wrap">
+    <table id="stages-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Route</th>
+          <th>Shift</th>
+          <th>Distance</th>
+          <th>Category</th>
+          <th>Runners</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="stages-tbody"></tbody>
+    </table>
   </div>
 </div>
 
@@ -661,9 +727,97 @@ L.marker([52.2396, 6.8508], {icon:labelIcon('FINISH · UT track','#BA7517'), zIn
 function refreshDots() { etappes.forEach(e => markerMap[e.id].setIcon(makeDotIcon(e))); }
 function refreshAll()  { drawLines(); refreshDots(); }
 
+
+/* ── Stage list ── */
+function renderStageList() {
+  const rows    = document.getElementById('stage-rows');
+  const summary = document.getElementById('panel-summary');
+  if (!rows) return;
+
+  const covered = etappes.filter(e => runners[e.id] && runners[e.id].length > 0).length;
+  if (summary && covered > 0) summary.textContent = covered + ' / 25 stages have runners';
+
+  rows.innerHTML = etappes.map(e => {
+    const cnt      = (runners[e.id] || []).length;
+    const dotColor = blockColors[e.block];
+    const genderLbl = e.gender === 'M' ? 'Men' : e.gender === 'B' ? 'Men & Women' : 'Women';
+    const isActive  = selectedId === e.id;
+    const countHtml = cnt > 0
+      ? `<span class="stage-row-count has">${cnt}</span>`
+      : '';
+    return `<div class="stage-row ${isActive ? 'active' : ''}" onclick="selectStageFromList(${e.id})">
+      <span class="stage-row-num">E${e.id}</span>
+      <div class="stage-row-dot" style="background:${dotColor};"></div>
+      <div class="stage-row-info">
+        <div class="stage-row-name">${e.name}</div>
+        <div class="stage-row-meta">${e.km} km · ${genderLbl}</div>
+      </div>
+      ${countHtml}
+    </div>`;
+  }).join('');
+}
+
+function selectStageFromList(id) {
+  selectedId = id;
+  drawLines();
+  refreshDots();
+  showDetail(id);
+  // 左侧列表高亮
+  renderStageList();
+  // 滚动左侧列表到对应行
+  const activeRow = document.querySelector('.stage-row.active');
+  if (activeRow) activeRow.scrollIntoView({block: 'nearest', behavior: 'smooth'});
+}
+
+
+/* ── Stage overview table ── */
+function renderStagesTable() {
+  const tbody   = document.getElementById('stages-tbody');
+  const covered = document.getElementById('stages-covered');
+  if (!tbody) return;
+
+  const cnt_covered = etappes.filter(e => (runners[e.id]||[]).length > 0).length;
+  if (covered) covered.textContent = cnt_covered + ' / 25 stages have runners';
+
+  tbody.innerHTML = etappes.map(e => {
+    const rList    = runners[e.id] || [];
+    const blockCls = e.block==='night' ? 'badge-night' : e.block==='morning' ? 'badge-morning' : 'badge-afternoon';
+    const genderLbl = e.gender==='M' ? 'Men' : e.gender==='B' ? 'Men & Women' : 'Women';
+    const runnersHtml = rList.length
+      ? rList.map(r => `<span class="st-runner-tag">${r.name}</span>`).join(' ')
+      : '<span class="st-empty">No one yet</span>';
+    const btnCls   = e.final ? 'st-signup-btn st-signup-final' : 'st-signup-btn';
+    const btnClick = e.final
+      ? `openFormFromTable(${e.id},'F')`
+      : `openFormFromTable(${e.id})`;
+
+    return `<tr>
+      <td class="st-num">E${e.id}</td>
+      <td class="st-name">${e.name}</td>
+      <td><span class="badge ${blockCls}">${blockNames[e.block]}</span></td>
+      <td style="color:#888;white-space:nowrap;">${e.km} km</td>
+      <td style="color:#888;">${genderLbl}</td>
+      <td><div class="st-runners">${runnersHtml}</div></td>
+      <td><button class="${btnCls}" onclick="${btnClick}">Sign up</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function openFormFromTable(id, preGender) {
+  // 联动地图
+  selectedId = id;
+  drawLines();
+  refreshDots();
+  // 打开表单
+  openForm(id, preGender);
+  // 滚回顶部让用户看到地图
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
 window.addEventListener('load', function() {
   drawLines();
   setTimeout(loadMediaFromDrive, 800);
+  renderStagesTable();
 });
 
 /* ── Detail panel ── */
@@ -703,6 +857,7 @@ function showDetail(id) {
   renderRunners(e.id);
   updateProgress();
   initMedia();
+  renderStagesTable();
 }
 
 function renderRunners(id) {
