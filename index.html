@@ -647,6 +647,12 @@ const etappes = [
 const blockColors = {night:"#534AB7", morning:"#0F6E56", afternoon:"#BA7517"};
 const blockNames  = {night:"Night shift", morning:"Morning shift", afternoon:"Afternoon shift"};
 const blockBadge  = {night:"badge-night", morning:"badge-morning", afternoon:"badge-afternoon"};
+
+function blockFromId(id) {
+  if (id <= 9)  return 'night';
+  if (id <= 17) return 'morning';
+  return 'afternoon';
+}
 const blockBg     = {night:"#EEEDFE", morning:"#E1F5EE", afternoon:"#FAEEDA"};
 const blockFg     = {night:"#3C3489", morning:"#085041", afternoon:"#633806"};
 
@@ -915,7 +921,7 @@ function loadSignupsFromSheet() {
         const record = {
           stageId:   id,
           stageName: row['Stage Name']  || '',
-          block:     'afternoon',
+          block:     id <= 9 ? 'night' : id <= 17 ? 'morning' : 'afternoon',
           km:        row['Distance (km)'] || 0,
           name:      row['Name']         || '',
           gender:    gender,
@@ -1364,7 +1370,7 @@ function openAdmin() {
             const record = {
               stageId:   sheetId,
               stageName: row['Stage Name'],
-              block:     row['Shift'] === 'Night shift' ? 'night' : row['Shift'] === 'Morning shift' ? 'morning' : 'afternoon',
+              block:     blockFromId(sheetId),
               km:        row['Distance (km)'],
               name:      row['Name'],
               gender:    row['Gender'],
