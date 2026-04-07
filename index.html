@@ -656,6 +656,7 @@ if (!sessionStorage.getItem('bata_session')) {
   sessionStorage.setItem('bata_session', Math.random().toString(36).slice(2));
 }
 const SESSION_TOKEN = sessionStorage.getItem('bata_session');
+const MAX_PER_STAGE = 1; // 每个 stage 最多报名人数
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbzhniWTgMgdfz_umRwa6Xy95I2APqjNJfOppONZ61q078Gl0I5Myvgpri1TNnd2isrKNg/exec';
 
@@ -713,7 +714,9 @@ function makeDotIcon(e) {
   const sel  = selectedId === e.id;
   const has  = runners[e.id].length > 0;
   const s    = sel ? 14 : 9;
-  const ring = has ? 'outline:2.5px solid rgba(216,90,48,0.5);outline-offset:1px;' : '';
+  const full = (runners[e.id]||[]).length >= MAX_PER_STAGE;
+  const ring = full ? 'outline:3px solid rgba(15,110,86,0.5);outline-offset:1px;'
+             : has  ? 'outline:2.5px solid rgba(216,90,48,0.4);outline-offset:1px;' : '';
   return L.divIcon({
     className:'',
     html:`<div style="width:${s}px;height:${s}px;border-radius:50%;background:${blockColors[e.block]};border:2px solid white;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,0.28);${ring}"></div>`,
@@ -833,6 +836,10 @@ function renderStagesTable() {
     const runnersHtml = rList.length
       ? rList.map(r => `<span class="st-runner-tag">${r.name}</span>`).join(' ')
       : '<span class="st-empty">No one yet</span>';
+    const isFull = (runners[e.id]||[]).length >= MAX_PER_STAGE;
+    const tableBtn = isFull
+      ? `<button class="st-signup-btn" disabled style="background:#f0f0ee;color:#bbb;border-color:#ddd;cursor:not-allowed;">&#10003; Taken</button>`
+      : `<button class="st-signup-btn" onclick="openFormFromTable(${e.id})">Sign up</button>`;
     rows.push(`<tr>
       <td class="st-num">E${e.id}</td>
       <td class="st-name">${e.name}</td>
@@ -840,7 +847,7 @@ function renderStagesTable() {
       <td style="color:#888;white-space:nowrap;">${e.km} km</td>
       <td style="color:#888;">${genderLbl}</td>
       <td><div class="st-runners">${runnersHtml}</div></td>
-      <td><button class="st-signup-btn" onclick="openFormFromTable(${e.id})">Sign up</button></td>
+      <td>${tableBtn}</td>
     </tr>`);
     i++;
   }
@@ -935,7 +942,10 @@ function showDetail(id) {
         <button style="flex:1;padding:8px;font-size:12px;font-weight:500;background:#EEEDFE;color:#3C3489;border:1px solid #AFA9EC;border-radius:7px;cursor:pointer;" onclick="openForm(${e.id},'F')">&#9792; Sign up (Women)</button>
         <button style="flex:1;padding:8px;font-size:12px;font-weight:500;background:#E1F5EE;color:#085041;border:1px solid #5DCAA5;border-radius:7px;cursor:pointer;" onclick="openForm(${e.id},'M')">&#9794; Sign up (Men)</button>
       </div>` : `
-      <button id="open-signup-btn" onclick="openForm(${e.id})">+ Sign up for Stage ${e.id}</button>`}
+      ${(runners[e.id]||[]).length >= MAX_PER_STAGE
+        ? `<button id="open-signup-btn" disabled style="background:#ccc;cursor:not-allowed;">&#10003; Stage taken</button>`
+        : `<button id="open-signup-btn" onclick="openForm(${e.id})">+ Sign up for Stage ${e.id}</button>`
+      }`}
       <div id="runners-list"></div>
     </div>
     <div id="progress-bar">
@@ -953,14 +963,18 @@ function renderRunners(id) {
   if (!list) return;
   if (!runners[id].length) { list.innerHTML = '<div id="empty-hint">No one signed up yet — be the first!</div>'; return; }
   list.innerHTML = runners[id].map((r,i) => {
-    const sub = [r.gender, r.diet||null].filter(Boolean).join(' · ');
+    const sub    = [r.gender, r.diet||null].filter(Boolean).join(' · ');
+    const isMine = r.session && r.session === SESSION_TOKEN;
+    const removeBtn = isMine
+      ? `<button class="runner-remove" onclick="removeRunner(${id},${i})" title="Remove my sign-up">×</button>`
+      : '';
     return `<div class="runner-tag">
       <div class="runner-avatar">${r.name.charAt(0).toUpperCase()}</div>
       <div class="runner-info">
         <div class="runner-name">${r.name}</div>
         ${sub?`<div class="runner-sub">${sub}</div>`:''}
       </div>
-      <button class="runner-remove" onclick="removeRunner(${id},${i})">×</button>
+      ${removeBtn}
     </div>`;
   }).join('');
 }
@@ -972,7 +986,21 @@ function removeRunner(id, index) {
   renderRunners(id);
   const span = document.querySelector('#signup-area h4 span');
   if (span) span.textContent = runners[id].length > 0 ? runners[id].length+' signed up' : 'be the first!';
-  refreshAll(); updateProgress();
+  refreshAll(); updateProgress(); renderStagesTable();
+
+  // 同步删除 Google Sheet 里的记录
+  fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+      action:    'deleteSignup',
+      stageId:   removed.stageId,
+      name:      removed.name,
+      signedAt:  removed.signedAt
+    })
+  })
+  .then(r => r.json())
+  .then(res => { if (!res.ok) console.warn('Sheet delete failed:', res.error); })
+  .catch(err => console.warn('Network error:', err));
 }
 
 /* ── Sign-up form ── */
@@ -1147,6 +1175,16 @@ function submitForm() {
   const diet     = document.getElementById('f-diet').value.trim();
   const comments = document.getElementById('f-comments').value.trim();
   if (!name || !formGender) return;
+
+  // 满额检查
+  if ((runners[formStageId] || []).length >= MAX_PER_STAGE) {
+    const inp = document.getElementById('f-name');
+    inp.value = '';
+    inp.style.border = '1.5px solid #c00';
+    inp.placeholder = 'This stage is already taken!';
+    document.getElementById('submit-btn').disabled = true;
+    return;
+  }
 
   // 同一路段不能重复报名
   const existing = (runners[formStageId] || []).some(r => r.name.toLowerCase() === name.toLowerCase());
