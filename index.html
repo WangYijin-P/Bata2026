@@ -1017,7 +1017,13 @@ function removeRunner(id, index) {
 
 /* ── Sign-up form ── */
 function openForm(id, preGender) {
-  formStageId = id; formGender = null;
+  // E24/E25 final stage: Women은 항상 24, Men은 항상 25로 고정
+  if (id === 24 || id === 25) {
+    formStageId = preGender === 'M' ? 25 : 24;
+  } else {
+    formStageId = id;
+  }
+  formGender = null;
   const e = etappes.find(x => x.id === id);
   document.getElementById('form-title').textContent       = `Stage ${id}: ${e.name}`;
   document.getElementById('form-sub').textContent         = `${blockNames[e.block]} · ${e.km} km`;
