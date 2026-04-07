@@ -1243,7 +1243,9 @@ function submitForm() {
 
   const e   = etappes.find(x => x.id === formStageId);
   const now = new Date().toLocaleString('en-GB', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  const record = { stageId:formStageId, stageName:e.name, block:e.block, km:e.km, name, gender:formGender, diet, comments, signedAt:now, session:SESSION_TOKEN };
+  // E24/E25 统一用同一个 stageName
+  const stageName = (formStageId===24||formStageId===25) ? 'Oude Markt → UT track (Men & Women)' : e.name;
+  const record = { stageId:formStageId, stageName, block:e.block, km:e.km, name, gender:formGender, diet, comments, signedAt:now, session:SESSION_TOKEN };
 
   // 本地立即更新
   runners[formStageId].push(record);
@@ -1347,14 +1349,20 @@ function openAdmin() {
       if (res.ok && res.data.length) {
         // 合并 Sheet 数据到 allSignups（去重：以 name+stageId+signedAt 为 key）
         res.data.forEach(row => {
+          const gender = row['Gender'] || '';
+          let sheetId  = Number(row['Stage #']);
+          // E24/E25: 按 Gender 修正 stageId 与 loadSignupsFromSheet 一致
+          if (sheetId === 24 || sheetId === 25) {
+            sheetId = (gender === 'Woman') ? 24 : 25;
+          }
           const exists = allSignups.some(s =>
             s.name === row['Name'] &&
-            String(s.stageId) === String(row['Stage #']) &&
+            s.stageId === sheetId &&
             s.signedAt === row['Signed up at']
           );
           if (!exists) {
             const record = {
-              stageId:   Number(row['Stage #']),
+              stageId:   sheetId,
               stageName: row['Stage Name'],
               block:     row['Shift'] === 'Night shift' ? 'night' : row['Shift'] === 'Morning shift' ? 'morning' : 'afternoon',
               km:        row['Distance (km)'],
