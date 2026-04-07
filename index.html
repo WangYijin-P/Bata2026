@@ -306,7 +306,14 @@ body {
 
 /* ── Stage overview table ── */
 #stages-section { width:100%; max-width:960px; margin-top:14px; }
-#stages-section .sec-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+#stages-section .sec-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:10px; padding:14px 18px;
+  background:white; border:0.5px solid #d5d2cc; border-radius:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
+  transition: background 0.15s;
+}
+#stages-section .sec-header:hover { background:#f5f3ef; }
 #stages-section .sec-header h2 { font-size:15px; font-weight:500; }
 #stages-section .sec-header span { font-size:12px; color:#aaa; }
 #stages-wrap { background:white; border:0.5px solid #d5d2cc; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
@@ -462,11 +469,13 @@ body {
       <span id="stages-covered"></span>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <span style="font-size:12px;color:#aaa;" id="stages-toggle-hint">Click to expand</span>
-      <span id="stages-chevron" style="font-size:16px;color:#aaa;transition:transform 0.25s;">&#8964;</span>
+      <div style="display:flex;align-items:center;gap:8px;background:#EEEDFE;padding:6px 14px;border-radius:20px;border:0.5px solid #AFA9EC;">
+        <span style="font-size:12px;color:#534AB7;font-weight:500;" id="stages-toggle-hint">Click to expand</span>
+        <span id="stages-chevron" style="font-size:14px;color:#534AB7;transition:transform 0.25s;line-height:1;">&#8964;</span>
+      </div>
     </div>
   </div>
-  <div id="stages-wrap" style="display:none;">
+  <div id="stages-wrap" style="display:none;margin-top:8px;">
     <table id="stages-table">
       <thead>
         <tr>
@@ -642,6 +651,12 @@ const blockBg     = {night:"#EEEDFE", morning:"#E1F5EE", afternoon:"#FAEEDA"};
 const blockFg     = {night:"#3C3489", morning:"#085041", afternoon:"#633806"};
 
 // ── Google Apps Script API ──
+// 每个浏览器会话唯一 token，用于标记自己的报名
+if (!sessionStorage.getItem('bata_session')) {
+  sessionStorage.setItem('bata_session', Math.random().toString(36).slice(2));
+}
+const SESSION_TOKEN = sessionStorage.getItem('bata_session');
+
 const API_URL = 'https://script.google.com/macros/s/AKfycbzhniWTgMgdfz_umRwa6Xy95I2APqjNJfOppONZ61q078Gl0I5Myvgpri1TNnd2isrKNg/exec';
 
 // allSignups: flat list for admin, runners[id] for per-stage view
@@ -1133,9 +1148,20 @@ function submitForm() {
   const comments = document.getElementById('f-comments').value.trim();
   if (!name || !formGender) return;
 
+  // 同一路段不能重复报名
+  const existing = (runners[formStageId] || []).some(r => r.name.toLowerCase() === name.toLowerCase());
+  if (existing) {
+    const inp = document.getElementById('f-name');
+    inp.value = '';
+    inp.style.border = '1.5px solid #c00';
+    inp.placeholder = 'Already signed up for this stage!';
+    document.getElementById('submit-btn').disabled = true;
+    return;
+  }
+
   const e   = etappes.find(x => x.id === formStageId);
   const now = new Date().toLocaleString('en-GB', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  const record = { stageId:formStageId, stageName:e.name, block:e.block, km:e.km, name, gender:formGender, diet, comments, signedAt:now };
+  const record = { stageId:formStageId, stageName:e.name, block:e.block, km:e.km, name, gender:formGender, diet, comments, signedAt:now, session:SESSION_TOKEN };
 
   // 本地立即更新
   runners[formStageId].push(record);
