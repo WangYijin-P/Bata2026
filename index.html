@@ -685,7 +685,9 @@ function drawLines() {
   // 虚拟终点：UT campus
   const finishPoint = {lat: 52.2396, lng: 6.8508}; // UT track
   etappes.forEach((e, i) => {
-    const next = etappes[i + 1] || (i === etappes.length - 1 ? finishPoint : null);
+    // E25 与 E24 是同一条路线，跳过 E25 避免重复画线
+    if (e.id === 25) return;
+    const next = e.id === 24 ? finishPoint : (etappes[i + 1] || (i === etappes.length - 1 ? finishPoint : null));
     if (!next) return;
     const sel  = selectedId === e.id;
     // 透明宽线：扩大点击区域（20px）
@@ -714,7 +716,7 @@ function makeDotIcon(e) {
   const sel  = selectedId === e.id;
   const has  = runners[e.id].length > 0;
   const s    = sel ? 14 : 9;
-  const full = (runners[e.id]||[]).length >= MAX_PER_STAGE;
+  const full = (e.id===24||e.id===25) ? ((runners[24]||[]).length >= MAX_PER_STAGE && (runners[25]||[]).length >= MAX_PER_STAGE) : (runners[e.id]||[]).length >= MAX_PER_STAGE;
   const ring = full ? 'outline:3px solid rgba(15,110,86,0.5);outline-offset:1px;'
              : has  ? 'outline:2.5px solid rgba(216,90,48,0.4);outline-offset:1px;' : '';
   return L.divIcon({
@@ -733,10 +735,14 @@ function labelIcon(text, color) {
 }
 
 etappes.forEach(e => {
+  // E25 与 E24 同一个点，跳过避免重复圆点
+  if (e.id === 25) { markerMap[e.id] = null; return; }
   const m = L.marker([e.lat,e.lng],{icon:makeDotIcon(e),zIndexOffset:200}).addTo(map);
   // 圆点tooltip：显示从该点出发的路段信息
+  const tooltipGender = (e.id===24) ? 'Men & Women' : (e.gender==='M'?'Men':e.gender==='B'?'Men & Women':'Women');
+  const tooltipName   = (e.id===24) ? 'Oude Markt → UT track' : e.name;
   m.bindTooltip(
-    `<b>E${e.id}</b> ${e.name}<br><span style="font-size:11px;color:#888;">${blockNames[e.block]} · ${e.km} km · ${e.gender==='M'?'Men':e.gender==='B'?'Men & Women':'Women'}</span>`,
+    `<b>E24–25</b> ${tooltipName}<br><span style="font-size:11px;color:#888;">${blockNames[e.block]} · ${e.km} km · ${tooltipGender}</span>`,
     {sticky: false, direction: 'top', offset: [0, -8], opacity: 0.97, className: 'bata-tooltip'}
   );
   m.on('click', () => { selectedId = e.id; drawLines(); refreshDots(); showDetail(e.id); });
@@ -748,7 +754,7 @@ L.marker([etappes[9].lat,  etappes[9].lng],  {icon:labelIcon('RESTART 1','#0F6E5
 L.marker([etappes[22].lat, etappes[22].lng], {icon:labelIcon('RESTART 2','#BA7517'), zIndexOffset:500, interactive:false}).addTo(map);
 L.marker([52.2396, 6.8508], {icon:labelIcon('FINISH · UT track','#BA7517'), zIndexOffset:500, interactive:false}).addTo(map);
 
-function refreshDots() { etappes.forEach(e => markerMap[e.id].setIcon(makeDotIcon(e))); }
+function refreshDots() { etappes.forEach(e => { if (markerMap[e.id]) markerMap[e.id].setIcon(makeDotIcon(e)); }); }
 function refreshAll()  { drawLines(); refreshDots(); }
 
 
