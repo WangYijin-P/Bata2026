@@ -615,32 +615,32 @@ body {
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 const etappes = [
-  // AVOND PLOEG (Night, 1-9): Nijmegen → via Germany border → 's-Heerenberg → Ulft
+  // AVOND PLOEG (Night, 1-9)
   {id:1,  name:"RSC Nijmegen → Radboud Sportcentrum", block:"night",     gender:"M", km:5.4,  lat:51.8218, lng:5.8674, desc:"Start at RSC Nijmegen — night shift begins"},
   {id:2,  name:"Radboud Sportcentrum → Wylerbergmeer",block:"night",     gender:"M", km:7.3,  lat:51.8230, lng:5.8700, desc:"From Radboud Sportcentrum towards Wylerbergmeer"},
-  {id:3,  name:"Wylerbergmeer → Niel",                block:"night",     gender:"M", km:7.6,  lat:51.8278, lng:5.9431, desc:"Past Wylerbergmeer lake — crossing into Germany briefly"},
-  {id:4,  name:"Niel → Dingdung",                     block:"night",     gender:"F", km:4.9,  lat:51.8300, lng:5.9980, desc:"Women's night stage — Dutch-German border area"},
-  {id:5,  name:"Dingdung → Rindern",                  block:"night",     gender:"M", km:9.9,  lat:51.8150, lng:6.0450, desc:"Longest night stage — along the Rhine near Kleve"},
-  {id:6,  name:"Rindern → Oraniendeich",              block:"night",     gender:"M", km:7.3,  lat:51.8101, lng:6.1264, desc:"Through the Rhine floodplains — Kleve area"},
-  {id:7,  name:"Oraniendeich → 's-Heerenberg",        block:"night",     gender:"M", km:7.8,  lat:51.8200, lng:6.2334, desc:"Crossing Rhine bridge back to Netherlands"},
+  {id:3,  name:"Wylerbergmeer → Niel",                block:"night",     gender:"M", km:7.6,  lat:51.8278, lng:5.9431, desc:"Past Wylerbergmeer lake"},
+  {id:4,  name:"Niel → Dingdung",                     block:"night",     gender:"F", km:4.9,  lat:51.8300, lng:5.9980, desc:"Women's night stage near the border"},
+  {id:5,  name:"Dingdung → Rindern",                  block:"night",     gender:"M", km:9.9,  lat:51.8150, lng:6.0450, desc:"Longest night stage"},
+  {id:6,  name:"Rindern → Oraniendeich",              block:"night",     gender:"M", km:7.3,  lat:51.8101, lng:6.1264, desc:"Through the Rhine floodplains"},
+  {id:7,  name:"Oraniendeich → 's-Heerenberg",        block:"night",     gender:"M", km:7.8,  lat:51.8200, lng:6.2334, desc:"Back towards the Netherlands"},
   {id:8,  name:"'s-Heerenberg → Azewijn",             block:"night",     gender:"F", km:6.7,  lat:51.8742, lng:6.2498, desc:"Women's stage through the Montferland hills"},
   {id:9,  name:"Azewijn → Ulft",                      block:"night",     gender:"F", km:5.1,  lat:51.8833, lng:6.3000, desc:"Final night stage — arrive at Ulft for Restart 1"},
-  // OCHTEND PLOEG (Morning, 10-17): Ulft → Achterhoek → Barchem
-  {id:10, name:"Ulft → Toldijk",                      block:"morning",   gender:"M", km:5.5,  lat:51.9052, lng:6.3178, desc:"RESTART 1 — morning shift starts at Ulft"},
-  {id:11, name:"Toldijk → Lireweg",                   block:"morning",   gender:"F", km:6.2,  lat:51.9700, lng:6.2100, desc:"Women's morning stage — Toldijk near Doetinchem area"},
-  {id:12, name:"Lireweg → Zwarte Veen",               block:"morning",   gender:"F", km:4.0,  lat:51.9900, lng:6.3500, desc:"Short women's stage through Achterhoek farmland"},
-  {id:13, name:"Zwarte Veen → Heelweg",               block:"morning",   gender:"M", km:8.4,  lat:51.9850, lng:6.3850, desc:"Men's stage through the heathland of the Achterhoek"},
+  // OCHTEND PLOEG (Morning, 10-17): Ulft (DRU) → Achterhoek → Barchem
+  {id:10, name:"Ulft → Toldijk",                      block:"morning",   gender:"M", km:5.5,  lat:51.8955, lng:6.3840, desc:"RESTART 1 — DRU Cultuurfabriek, Ulft"},
+  {id:11, name:"Toldijk → Lireweg",                   block:"morning",   gender:"F", km:6.2,  lat:52.0546, lng:6.2223, desc:"Women's morning stage — Toldijk village"},
+  {id:12, name:"Lireweg → Zwarte Veen",               block:"morning",   gender:"F", km:4.0,  lat:52.0060, lng:6.3500, desc:"Short women's stage near Zelhem"},
+  {id:13, name:"Zwarte Veen → Heelweg",               block:"morning",   gender:"M", km:8.4,  lat:52.0060, lng:6.3950, desc:"Men's stage through Achterhoek heathland"},
   {id:14, name:"Heelweg → Wolversveen",               block:"morning",   gender:"F", km:7.1,  lat:51.9700, lng:6.4480, desc:"Women's stage — Heelweg village"},
-  {id:15, name:"Wolversveen → Huize Zelle",           block:"morning",   gender:"M", km:9.4,  lat:52.0100, lng:6.4450, desc:"Longest morning stage — near Ruurlo"},
-  {id:16, name:"Huize Zelle → Hagenbeek",             block:"morning",   gender:"M", km:6.4,  lat:52.0900, lng:6.4300, desc:"Past the historic Huize Zelle estate near Lochem"},
-  {id:17, name:"Hagenbeek → Barchem",                 block:"morning",   gender:"M", km:3.5,  lat:52.1100, lng:6.4380, desc:"Short final morning stage — arrive at Barchem for Restart 2"},
+  {id:15, name:"Wolversveen → Huize Zelle",           block:"morning",   gender:"M", km:9.4,  lat:52.0288, lng:6.3939, desc:"Longest morning stage — near Ruurlo"},
+  {id:16, name:"Huize Zelle → Hagenbeek",             block:"morning",   gender:"M", km:6.4,  lat:52.1254, lng:6.4111, desc:"Past Huize Zelle estate near Lochem"},
+  {id:17, name:"Hagenbeek → Barchem",                 block:"morning",   gender:"M", km:3.5,  lat:52.1194, lng:6.4334, desc:"Short final morning stage to Barchem"},
   // MIDDAG PLOEG (Afternoon, 18-25): Barchem → Twente → Enschede → UT track
-  {id:18, name:"Barchem → Nettelhorst",               block:"afternoon", gender:"M", km:8.0,  lat:52.1254, lng:6.4437, desc:"RESTART 2 — afternoon shift kicks off at Barchem"},
-  {id:19, name:"Nettelhorst → Noordijk",              block:"afternoon", gender:"M", km:7.2,  lat:52.1450, lng:6.4820, desc:"Through the Nettelhorst area heading towards Enschede"},
-  {id:20, name:"Noordijk → Middendorp",               block:"afternoon", gender:"F", km:6.0,  lat:52.2100, lng:6.5450, desc:"Women's afternoon stage near Noordijk"},
+  {id:18, name:"Barchem → Nettelhorst",               block:"afternoon", gender:"M", km:8.0,  lat:52.1254, lng:6.4437, desc:"RESTART 2 — Barchem Dorpsplein"},
+  {id:19, name:"Nettelhorst → Noordijk",              block:"afternoon", gender:"M", km:7.2,  lat:52.1750, lng:6.4580, desc:"Through Nettelhorst towards Enschede"},
+  {id:20, name:"Noordijk → Middendorp",               block:"afternoon", gender:"F", km:6.0,  lat:52.1459, lng:6.5712, desc:"Women's afternoon stage near Noordijk"},
   {id:21, name:"Middendorp → Bentelo",                block:"afternoon", gender:"M", km:6.3,  lat:52.2200, lng:6.6350, desc:"Men's stage through Middendorp"},
-  {id:22, name:"Bentelo → Grolsch",                   block:"afternoon", gender:"M", km:10.7, lat:52.2220, lng:6.6820, desc:"Longest stage — epic final approach to Enschede"},
-  {id:23, name:"Grolsch → Oude Markt",                block:"afternoon", gender:"F", km:7.4,  lat:52.2070, lng:6.8171, desc:"Women's stage into Enschede city centre"},
+  {id:22, name:"Bentelo → Grolsch",                   block:"afternoon", gender:"M", km:10.7, lat:52.2220, lng:6.6820, desc:"Longest stage — final approach to Enschede"},
+  {id:23, name:"Grolsch → Oude Markt",                block:"afternoon", gender:"F", km:7.4,  lat:52.2070, lng:6.8171, desc:"Women's stage — De Groote Plooij, Brouwerslaan 1"},
   {id:24, name:"Oude Markt → UT track (Women)",       block:"afternoon", gender:"F", km:7.8,  lat:52.2216, lng:6.8958, desc:"RESTART 3 — women's final leg to University of Twente", final:true},
   {id:25, name:"Oude Markt → UT track (Men & Women)", block:"afternoon", gender:"B", km:7.8,  lat:52.2216, lng:6.8968, desc:"RESTART 3 — men's final leg to University of Twente", final:true},
 ];
