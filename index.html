@@ -896,15 +896,23 @@ function loadSignupsFromSheet() {
     .then(res => {
       if (!res.ok || !res.data.length) { renderStagesTable(); return; }
       res.data.forEach(row => {
-        const id = Number(row['Stage #']);
+        let id = Number(row['Stage #']);
         if (!id) return;
+        const gender = row['Gender'] || '';
+
+        // E24/E25 final stage: 按 Gender 决定存入哪个 slot
+        // Women → runners[24], Men → runners[25]
+        if (id === 24 || id === 25) {
+          id = (gender === 'Woman') ? 24 : 25;
+        }
+
         const record = {
           stageId:   id,
           stageName: row['Stage Name']  || '',
-          block:     row['Shift'] === 'Night shift' ? 'night' : row['Shift'] === 'Morning shift' ? 'morning' : 'afternoon',
+          block:     'afternoon',
           km:        row['Distance (km)'] || 0,
           name:      row['Name']         || '',
-          gender:    row['Gender']       || '',
+          gender:    gender,
           diet:      row['Dietary Requirements'] || '',
           comments:  row['Comments']     || '',
           signedAt:  row['Signed up at'] || ''
