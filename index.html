@@ -934,7 +934,7 @@ function loadSignupsFromSheet() {
 /* ── Detail panel ── */
 function showDetail(id) {
   const e   = etappes.find(x => x.id === id);
-  const cnt = runners[e.id].length;
+  const cnt = (e.id===24||e.id===25) ? (runners[24]||[]).length + (runners[25]||[]).length : (runners[e.id]||[]).length;
   const panel = document.getElementById('detail-panel');
   panel.innerHTML = `
     <div id="detail-header">
@@ -981,12 +981,24 @@ function showDetail(id) {
 function renderRunners(id) {
   const list = document.getElementById('runners-list');
   if (!list) return;
-  if (!runners[id].length) { list.innerHTML = '<div id="empty-hint">No one signed up yet — be the first!</div>'; return; }
-  list.innerHTML = runners[id].map((r,i) => {
+  // E24/E25 final stage: 合并显示两个 slot
+  const isFinal = (id === 24 || id === 25);
+  const allRunners = isFinal
+    ? [
+        ...(runners[24]||[]).map((r,i) => ({...r, _slot:24, _idx:i})),
+        ...(runners[25]||[]).map((r,i) => ({...r, _slot:25, _idx:i}))
+      ]
+    : (runners[id]||[]).map((r,i) => ({...r, _slot:id, _idx:i}));
+
+  if (!allRunners.length) {
+    list.innerHTML = '<div id="empty-hint">No one signed up yet — be the first!</div>';
+    return;
+  }
+  list.innerHTML = allRunners.map(r => {
     const sub    = [r.gender, r.diet||null].filter(Boolean).join(' · ');
     const isMine = r.session && r.session === SESSION_TOKEN;
     const removeBtn = isMine
-      ? `<button class="runner-remove" onclick="removeRunner(${id},${i})" title="Remove my sign-up">×</button>`
+      ? `<button class="runner-remove" onclick="removeRunner(${r._slot},${r._idx})" title="Remove my sign-up">×</button>`
       : '';
     return `<div class="runner-tag">
       <div class="runner-avatar">${r.name.charAt(0).toUpperCase()}</div>
