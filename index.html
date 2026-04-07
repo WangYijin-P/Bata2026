@@ -857,8 +857,41 @@ function openFormFromTable(id, preGender) {
 window.addEventListener('load', function() {
   drawLines();
   setTimeout(loadMediaFromDrive, 800);
-  renderStagesTable();
+  loadSignupsFromSheet();
 });
+
+function loadSignupsFromSheet() {
+  fetch(API_URL + '?action=getSignups')
+    .then(r => r.json())
+    .then(res => {
+      if (!res.ok || !res.data.length) { renderStagesTable(); return; }
+      res.data.forEach(row => {
+        const id = Number(row['Stage #']);
+        if (!id) return;
+        const record = {
+          stageId:   id,
+          stageName: row['Stage Name']  || '',
+          block:     row['Shift'] === 'Night shift' ? 'night' : row['Shift'] === 'Morning shift' ? 'morning' : 'afternoon',
+          km:        row['Distance (km)'] || 0,
+          name:      row['Name']         || '',
+          gender:    row['Gender']       || '',
+          diet:      row['Dietary Requirements'] || '',
+          comments:  row['Comments']     || '',
+          signedAt:  row['Signed up at'] || ''
+        };
+        if (!runners[id]) runners[id] = [];
+        // 去重
+        const dup = runners[id].some(r => r.name === record.name && r.signedAt === record.signedAt);
+        if (!dup) {
+          runners[id].push(record);
+          allSignups.push(record);
+        }
+      });
+      refreshAll();
+      renderStagesTable();
+    })
+    .catch(() => renderStagesTable());
+}
 
 /* ── Detail panel ── */
 function showDetail(id) {
@@ -986,7 +1019,13 @@ function updateSubmitBtn() {
   const name = (document.getElementById('f-name')||{}).value||'';
   document.getElementById('submit-btn').disabled = !(name.trim() && formGender);
 }
-document.addEventListener('input', e => { if (e.target.id==='f-name') updateSubmitBtn(); });
+document.addEventListener('input', e => {
+  if (e.target.id==='f-name') {
+    updateSubmitBtn();
+    e.target.style.borderColor = '';
+    e.target.placeholder = 'Your name...';
+  }
+});
 
 
 /* ── Media gallery ── */
