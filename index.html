@@ -1226,8 +1226,10 @@ function submitForm() {
   const comments = document.getElementById('f-comments').value.trim();
   if (!name || !formGender) return;
 
-  // 满额检查
-  if ((runners[formStageId] || []).length >= MAX_PER_STAGE) {
+  const isBackup = formStageId === 0;
+
+  // 满额检查（backup 不限制）
+  if (!isBackup && (runners[formStageId] || []).length >= MAX_PER_STAGE) {
     const inp = document.getElementById('f-name');
     inp.value = '';
     inp.style.border = '1.5px solid #c00';
@@ -1236,28 +1238,37 @@ function submitForm() {
     return;
   }
 
-  // 同一路段不能重复报名
-  const existing = (runners[formStageId] || []).some(r => r.name.toLowerCase() === name.toLowerCase());
-  if (existing) {
-    const inp = document.getElementById('f-name');
-    inp.value = '';
-    inp.style.border = '1.5px solid #c00';
-    inp.placeholder = 'Already signed up for this stage!';
-    document.getElementById('submit-btn').disabled = true;
-    return;
+  // 同一路段不能重复报名（backup 不限制）
+  if (!isBackup) {
+    const existing = (runners[formStageId] || []).some(r => r.name.toLowerCase() === name.toLowerCase());
+    if (existing) {
+      const inp = document.getElementById('f-name');
+      inp.value = '';
+      inp.style.border = '1.5px solid #c00';
+      inp.placeholder = 'Already signed up for this stage!';
+      document.getElementById('submit-btn').disabled = true;
+      return;
+    }
   }
 
-  const e   = etappes.find(x => x.id === formStageId);
+  const e   = isBackup ? null : etappes.find(x => x.id === formStageId);
   const now = new Date().toLocaleString('en-GB', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  // E24/E25 统一用同一个 stageName
-  const stageName = (formStageId===24||formStageId===25) ? 'Oude Markt → UT track (Men & Women)' : e.name;
-  const record = { stageId:formStageId, stageName, block:e.block, km:e.km, name, gender:formGender, diet, comments, signedAt:now, session:SESSION_TOKEN };
+  const stageName = isBackup ? 'Backup — any stage'
+    : (formStageId===24||formStageId===25) ? 'Oude Markt → UT track (Men & Women)'
+    : e.name;
+  const record = {
+    stageId:   isBackup ? 0 : formStageId,
+    stageName,
+    block:     isBackup ? 'backup' : e.block,
+    km:        isBackup ? 0 : e.km,
+    name, gender:formGender, diet, comments, signedAt:now, session:SESSION_TOKEN
+  };
 
   // 本地立即更新
-  runners[formStageId].push(record);
+  if (!isBackup) runners[formStageId].push(record);
   allSignups.push(record);
   closeForm();
-  showDetail(formStageId);
+  if (!isBackup) showDetail(formStageId);
   refreshAll();
 
   // 异步发送到 Google Sheet
