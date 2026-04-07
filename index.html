@@ -456,6 +456,7 @@ body {
       &#9679; Sign up as Backup
     </button>
   </div>
+  <div id="backup-list" style="display:none;padding:12px 22px 16px;border-top:0.5px solid #f0ede8;display:flex;flex-wrap:wrap;gap:6px;"></div>
 </div>
 
 
@@ -807,6 +808,39 @@ function selectStageFromList(id) {
 
 
 /* ── Stage overview table ── */
+function renderBackupList() {
+  const list = document.getElementById('backup-list');
+  if (!list) return;
+  const backups = allSignups.filter(s => s.stageId === 0);
+  if (!backups.length) {
+    list.style.display = 'none';
+    return;
+  }
+  list.style.display = 'flex';
+  list.innerHTML = backups.map((r, i) => {
+    const isMine = r.session && r.session === SESSION_TOKEN;
+    const removeBtn = isMine
+      ? `<button onclick="removeBackup(${i})" style="margin-left:4px;font-size:12px;color:#aaa;background:none;border:none;cursor:pointer;line-height:1;">×</button>`
+      : '';
+    return `<span style="display:inline-flex;align-items:center;background:#FAEEDA;color:#633806;font-size:12px;padding:3px 10px;border-radius:12px;border:0.5px solid #BA7517;">
+      ${r.name} <span style="font-size:10px;opacity:0.6;margin-left:4px;">(${r.gender})</span>${removeBtn}
+    </span>`;
+  }).join('');
+}
+
+function removeBackup(index) {
+  const backups = allSignups.filter(s => s.stageId === 0);
+  const removed = backups[index];
+  if (!removed) return;
+  const gi = allSignups.findIndex(s => s.stageId===0 && s.name===removed.name && s.signedAt===removed.signedAt);
+  if (gi !== -1) allSignups.splice(gi, 1);
+  renderBackupList();
+  fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({action:'deleteSignup', stageId:0, name:removed.name, signedAt:removed.signedAt})
+  }).catch(err => console.warn(err));
+}
+
 function renderStagesTable() {
   const tbody   = document.getElementById('stages-tbody');
   const covered = document.getElementById('stages-covered');
@@ -939,8 +973,9 @@ function loadSignupsFromSheet() {
       });
       refreshAll();
       renderStagesTable();
+      renderBackupList();
     })
-    .catch(() => renderStagesTable());
+    .catch(() => { renderStagesTable(); renderBackupList(); });
 }
 
 /* ── Detail panel ── */
@@ -1270,6 +1305,7 @@ function submitForm() {
   closeForm();
   if (!isBackup) showDetail(formStageId);
   refreshAll();
+  renderBackupList();
 
   // 异步发送到 Google Sheet
   const btn = document.getElementById('submit-btn');
