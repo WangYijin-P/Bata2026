@@ -943,7 +943,7 @@ function loadSignupsFromSheet() {
       if (!res.ok || !res.data.length) { renderStagesTable(); return; }
       res.data.forEach(row => {
         let id = Number(row['Stage #']);
-        if (!id) return;
+        if (id === undefined || id === null || isNaN(id)) return; // 只跳过真正无效的
         const gender = row['Gender'] || '';
 
         // E24/E25 final stage: 按 Gender 决定存入哪个 slot
@@ -952,10 +952,11 @@ function loadSignupsFromSheet() {
           id = (gender === 'Woman') ? 24 : 25;
         }
 
+        const isBackup = id === 0;
         const record = {
           stageId:   id,
           stageName: row['Stage Name']  || '',
-          block:     id <= 9 ? 'night' : id <= 17 ? 'morning' : 'afternoon',
+          block:     isBackup ? 'backup' : id <= 9 ? 'night' : id <= 17 ? 'morning' : 'afternoon',
           km:        row['Distance (km)'] || 0,
           name:      row['Name']         || '',
           gender:    gender,
