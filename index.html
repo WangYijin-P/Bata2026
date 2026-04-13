@@ -940,13 +940,9 @@ function renderStagesTable() {
       let sizeHtml2425 = '';
       if (allFinal.length > 0) {
         sizeHtml2425 = allFinal.map((r) => {
-          const isMine = r.session && r.session === SESSION_TOKEN;
-          if (isMine) {
-            return r.size
-              ? `<button class="st-size-btn has-size" onclick="openSizePicker(${r._slot},${r._idx})">${r.size} ✎</button>`
-              : `<button class="st-size-btn" onclick="openSizePicker(${r._slot},${r._idx})">+ Select size</button>`;
-          }
-          return r.size ? `<span class="st-size-tag" style="cursor:default;">${r.size}</span>` : '';
+          return r.size
+            ? `<button class="st-size-btn has-size" onclick="openSizePicker(${r._slot},${r._idx})">${r.size} ✎</button>`
+            : `<button class="st-size-btn" onclick="openSizePicker(${r._slot},${r._idx})">+ Select size</button>`;
         }).join(' ');
       } else {
         sizeHtml2425 = '<span style="font-size:11px;color:#ddd;">—</span>';
@@ -982,13 +978,9 @@ function renderStagesTable() {
     let sizeHtml = '';
     if (rList.length > 0) {
       sizeHtml = rList.map((r, ri) => {
-        const isMine = r.session && r.session === SESSION_TOKEN;
-        if (isMine) {
-          return r.size
-            ? `<button class="st-size-btn has-size" onclick="openSizePicker(${e.id},${ri})">${r.size} ✎</button>`
-            : `<button class="st-size-btn" onclick="openSizePicker(${e.id},${ri})">+ Select size</button>`;
-        }
-        return r.size ? `<span class="st-size-tag" style="cursor:default;">${r.size}</span>` : '';
+        return r.size
+          ? `<button class="st-size-btn has-size" onclick="openSizePicker(${e.id},${ri})">${r.size} ✎</button>`
+          : `<button class="st-size-btn" onclick="openSizePicker(${e.id},${ri})">+ Select size</button>`;
       }).join(' ');
     } else {
       sizeHtml = '<span style="font-size:11px;color:#ddd;">—</span>';
@@ -1446,7 +1438,7 @@ function openSizePicker(stageId, idx) {
     ? [...(runners[24]||[]).map(r=>({...r,_slot:24})), ...(runners[25]||[]).map(r=>({...r,_slot:25}))]
     : (runners[stageId]||[]);
   const r = stageId === 24 || stageId === 25 ? slot[idx] : (runners[stageId]||[])[idx];
-  if (!r || !(r.session && r.session === SESSION_TOKEN)) return;
+  if (!r) return;
   sizeTarget = {stageId: r._slot || stageId, idx, name: r.name};
   selectedSize = r.size || null;
   document.getElementById('size-modal-title').textContent = 'Shirt size for ' + r.name;
@@ -1474,6 +1466,11 @@ function confirmSize() {
   const {stageId, idx, name} = sizeTarget;
   const r = (runners[stageId]||[])[idx];
   if (!r) return;
+  // 자기 것만 저장 (session 없어도 이름으로 확인)
+  if (r.session && r.session !== SESSION_TOKEN) {
+    alert("You can only update your own size.");
+    return;
+  }
   r.size = selectedSize;
   // update allSignups too
   const ai = allSignups.findIndex(s => s.name===r.name && s.stageId===stageId && s.signedAt===r.signedAt);
