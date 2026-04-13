@@ -376,6 +376,11 @@ body {
 .st-size-btn:hover { background:#EEEDFE; }
 .st-size-btn.has-size { background:#E1F5EE; color:#085041; border-color:#0F6E56; }
 .st-size-btn.has-size:hover { background:#c5eadb; }
+.st-driver-btn { font-size:11px; padding:4px 12px; border-radius:6px; cursor:pointer; border:0.5px solid #d5d2cc; background:white; color:#888; white-space:nowrap; transition:all 0.15s; }
+.st-driver-btn:hover { border-color:#534AB7; color:#534AB7; background:#EEEDFE; }
+.st-driver-btn.is-driver { background:#E1F5EE; color:#085041; border-color:#0F6E56; font-weight:500; }
+.st-driver-btn.is-driver:hover { background:#c5eadb; }
+.st-driver-btn.no-driver { background:#f5f3ef; color:#aaa; border-color:#e0ddd8; }
 </style>
 </head>
 <body>
@@ -424,6 +429,19 @@ body {
       </div>
       <div class="info-card-title">Official Website</div>
       <div class="info-card-sub">batavierenrace.nl &nbsp;&#8599;</div>
+    </div>
+  </a>
+  <!-- WhatsApp card -->
+  <a class="info-card" id="whatsapp-card" href="https://chat.whatsapp.com/CyYje4Jjlku24VmamKuLRU" target="_blank" style="width:190px;flex-shrink:0;">
+    <div class="info-card-body">
+      <div class="website-icon" style="background:#25D366;">
+        <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
+          <path d="M16 2C8.27 2 2 8.27 2 16c0 2.52.66 4.88 1.82 6.93L2 30l7.27-1.9A13.94 13.94 0 0 0 16 30c7.73 0 14-6.27 14-14S23.73 2 16 2z" fill="white"/>
+          <path d="M11.5 9.5c-.35-.7-.72-.71-1.05-.72H9.7c-.35 0-.9.13-1.37.63C7.86 10 6.5 11.27 6.5 13.9s1.57 5.52 1.78 5.9c.22.37 3.03 4.83 7.44 6.58 3.69 1.46 4.44 1.17 5.24 1.1.8-.08 2.58-1.06 2.94-2.08.37-1.02.37-1.9.26-2.08-.11-.18-.4-.29-.85-.51-.45-.22-2.67-1.32-3.09-1.47-.41-.15-.71-.22-1.01.22-.3.45-1.16 1.47-1.42 1.77-.26.3-.53.34-.97.11-.45-.22-1.88-.69-3.58-2.21-1.32-1.18-2.21-2.64-2.47-3.08-.26-.45-.03-.69.2-.91.2-.2.45-.52.67-.78.22-.26.3-.45.45-.75.15-.3.07-.57-.04-.8-.11-.22-.98-2.42-1.36-3.32z" fill="#25D366"/>
+        </svg>
+      </div>
+      <div class="info-card-title">WhatsApp Group</div>
+      <div class="info-card-sub">Join the group chat &nbsp;&#8599;</div>
     </div>
   </a>
 </div>
@@ -638,13 +656,33 @@ body {
   <div class="sec-header" onclick="toggleStages()" style="cursor:pointer;user-select:none;">
     <div style="display:flex;align-items:center;gap:8px;">
       <h2>All 25 Stages</h2>
-      <span style="font-size:11px;color:#888;background:#f5f3ef;padding:3px 9px;border-radius:6px;">🧥 Select your hoodie size in the Size column after signing up</span>
       <span id="stages-covered"></span>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
       <div style="display:flex;align-items:center;gap:8px;background:#EEEDFE;padding:6px 14px;border-radius:20px;border:0.5px solid #AFA9EC;">
         <span style="font-size:12px;color:#534AB7;font-weight:500;" id="stages-toggle-hint">Click to expand</span>
         <span id="stages-chevron" style="font-size:14px;color:#534AB7;transition:transform 0.25s;line-height:1;">&#8964;</span>
+      </div>
+    </div>
+  </div>
+  <div id="stages-info" style="display:none;margin-top:8px;margin-bottom:8px;">
+    <div style="background:white;border:0.5px solid #d5d2cc;border-radius:12px;padding:18px 22px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:12px;">A few things to do after signing up</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="font-size:18px;line-height:1.3;">🧥</span>
+          <div>
+            <div style="font-size:13px;font-weight:500;color:#1a1a1a;">1. Select your hoodie size</div>
+            <div style="font-size:12px;color:#888;margin-top:2px;">Find your name in the table below and click <b>+ Select size</b> in the Size column. Use the measurement guide in the popup to pick the right fit.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="font-size:18px;line-height:1.3;">🚐</span>
+          <div>
+            <div style="font-size:13px;font-weight:500;color:#1a1a1a;">2. Can you drive the van?</div>
+            <div style="font-size:12px;color:#888;margin-top:2px;">Each shift needs <b>two van drivers / leaders</b> to transport runners and stuffs. If you're happy to drive, click <b>+ Driver?</b> next to your name in the Driver column.</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -660,12 +698,154 @@ body {
           <th>Runners</th>
           <th>Sign up</th>
           <th>Size</th>
+          <th>Driver?</th>
         </tr>
       </thead>
       <tbody id="stages-tbody"></tbody>
     </table>
   </div>
 </div>
+
+<!-- BBQ Info Block -->
+<div id="bbq-section" style="width:100%;max-width:960px;margin-top:14px;">
+  <div style="background:white;border:0.5px solid #d5d2cc;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+
+    <!-- Header -->
+    <div style="padding:16px 22px 14px;border-bottom:0.5px solid #f0ede8;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+          <span style="font-size:20px;line-height:1;">🍖</span>
+          <span style="font-size:15px;font-weight:500;color:#1a1a1a;">BBQ after the race</span>
+
+        </div>
+        <div style="font-size:12px;color:#888;">We have already ordered — 5 pieces of meat per person</div>
+      </div>
+      <!-- Lang toggle -->
+      <div style="display:flex;gap:0;border:0.5px solid #ddd;border-radius:7px;overflow:hidden;flex-shrink:0;">
+        <button id="bbq-lang-en" onclick="setBbqLang('en')" style="padding:5px 12px;font-size:11px;font-weight:500;border:none;background:#534AB7;color:white;cursor:pointer;">EN</button>
+        <button id="bbq-lang-nl" onclick="setBbqLang('nl')" style="padding:5px 12px;font-size:11px;font-weight:500;border:none;background:white;color:#888;cursor:pointer;">NL</button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div style="padding:18px 22px;display:flex;gap:24px;flex-wrap:wrap;">
+
+      <!-- Meat list -->
+      <div style="flex:1;min-width:200px;">
+        <div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;color:#aaa;margin-bottom:10px;">
+          <span class="bbq-en">Meat selection</span>
+          <span class="bbq-nl" style="display:none;">Vleesselectie</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div class="bbq-item"><span class="bbq-en">Pork satay</span><span class="bbq-nl" style="display:none;">Varkenssaté</span></div>
+          <div class="bbq-item"><span class="bbq-en">Marinated beef steak</span><span class="bbq-nl" style="display:none;">Gemarineerde biefstuk</span></div>
+          <div class="bbq-item"><span class="bbq-en">Marinated pork chop</span><span class="bbq-nl" style="display:none;">Gemarineerde karbonade</span></div>
+          <div class="bbq-item"><span class="bbq-en">Seasoned bacon slab</span><span class="bbq-nl" style="display:none;">Gekruide speklap</span></div>
+          <div class="bbq-item"><span class="bbq-en">Chicken culinair</span><span class="bbq-nl" style="display:none;">Kip Culinair</span></div>
+          <div class="bbq-item"><span class="bbq-en">Beef hamburger</span><span class="bbq-nl" style="display:none;">Runderhamburger</span></div>
+          <div class="bbq-item"><span class="bbq-en">BBQ sausage</span><span class="bbq-nl" style="display:none;">Barbecueworstje</span></div>
+          <div class="bbq-item"><span class="bbq-en">Homemade spare ribs</span><span class="bbq-nl" style="display:none;">Huisgemaakte spareribs</span></div>
+          <div class="bbq-item"><span class="bbq-en">Chicken disc</span><span class="bbq-nl" style="display:none;">Kipschijf</span></div>
+          <div class="bbq-item"><span class="bbq-en">Gamekeeper steak</span><span class="bbq-nl" style="display:none;">Boswachtersteak</span></div>
+        </div>
+      </div>
+
+      <!-- Sides & sauces -->
+      <div style="flex:1;min-width:160px;">
+        <div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;color:#aaa;margin-bottom:10px;">
+          <span class="bbq-en">Salads &amp; sides</span>
+          <span class="bbq-nl" style="display:none;">Salades &amp; bijgerechten</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:14px;">
+          <div class="bbq-item"><span class="bbq-en">Homemade beef salad</span><span class="bbq-nl" style="display:none;">Eigengemaakte rundvleessalade</span></div>
+          <div class="bbq-item"><span class="bbq-en">Homemade leg ham salad</span><span class="bbq-nl" style="display:none;">Huisgemaakte beenhamsalade</span></div>
+          <div class="bbq-item"><span class="bbq-en">Fresh coleslaw salad</span><span class="bbq-nl" style="display:none;">Verse rauwkostsalade</span></div>
+          <div class="bbq-item"><span class="bbq-en">Bread with herb butter</span><span class="bbq-nl" style="display:none;">Stokbrood met kruidenboter</span></div>
+        </div>
+        <div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;color:#aaa;margin-bottom:10px;">
+          <span class="bbq-en">Sauces</span><span class="bbq-nl" style="display:none;">Sauzen</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div class="bbq-item"><span class="bbq-en">Satay sauce</span><span class="bbq-nl" style="display:none;">Satésaus</span></div>
+          <div class="bbq-item"><span class="bbq-en">Garlic sauce</span><span class="bbq-nl" style="display:none;">Knoflooksaus</span></div>
+          <div class="bbq-item"><span class="bbq-en">Cocktail sauce</span><span class="bbq-nl" style="display:none;">Cocktailsaus</span></div>
+        </div>
+      </div>
+
+      <!-- Vegetarian notice -->
+      <div style="width:100%;background:#F0FAF4;border:0.5px solid #5DCAA5;border-radius:9px;padding:13px 16px;display:flex;gap:12px;align-items:flex-start;margin-bottom:8px;">
+        <span style="font-size:18px;line-height:1.3;">🥗</span>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:#085041;margin-bottom:4px;">
+            <span class="bbq-en">Vegetarian guests — please note</span>
+            <span class="bbq-nl" style="display:none;">Vegetariërs — let op</span>
+          </div>
+          <div style="font-size:12px;color:#0F6E56;line-height:1.6;">
+            <span class="bbq-en">
+              A vegetarian meat substitute will be provided. The salads, bread, and sauces are available for everyone.
+            </span>
+            <span class="bbq-nl" style="display:none;">
+              Er wordt een vegetarisch vleesalternatief aangeboden. De salades, het stokbrood en de sauzen zijn voor iedereen beschikbaar.
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lactose free notice -->
+      <div style="width:100%;background:#EFF6FF;border:0.5px solid #93C5FD;border-radius:9px;padding:13px 16px;display:flex;gap:12px;align-items:flex-start;">
+        <span style="font-size:18px;line-height:1.3;">🥛</span>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:#1D4ED8;margin-bottom:4px;">
+            <span class="bbq-en">Lactose-free guests — please note</span>
+            <span class="bbq-nl" style="display:none;">Lactosevrije gasten — let op</span>
+          </div>
+          <div style="font-size:12px;color:#1E40AF;line-height:1.6;">
+            <span class="bbq-en">
+              Some items may contain lactose (herb butter on bread, garlic sauce, cocktail sauce).
+              Please skip the bread with herb butter and ask the BBQ staff about sauce ingredients on the day.
+              The meat itself is lactose-free — enjoy! 🍖
+            </span>
+            <span class="bbq-nl" style="display:none;">
+              Sommige items kunnen lactose bevatten (kruidenboter op stokbrood, knoflooksaus, cocktailsaus).
+              Sla het stokbrood met kruidenboter over en vraag het BBQ-personeel op de dag zelf naar de sauzen.
+              Het vlees zelf is lactosevrij — eet smakelijk! 🍖
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Diet chart block -->
+<div id="diet-chart-section" style="width:100%;max-width:960px;margin-top:10px;">
+  <div style="background:white;border:0.5px solid #d5d2cc;border-radius:12px;padding:18px 22px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:14px;">📊 Dietary requirements overview</div>
+    <div id="diet-chart-inner">
+      <div style="font-size:12px;color:#bbb;font-style:italic;">Loading...</div>
+    </div>
+  </div>
+</div>
+
+<style>
+.bbq-item {
+  font-size: 12px; color: #444;
+  padding: 4px 10px; background: #faf9f7;
+  border-radius: 5px; border: 0.5px solid #f0ede8;
+}
+</style>
+
+<script>
+function setBbqLang(lang) {
+  document.querySelectorAll('.bbq-en').forEach(el => el.style.display = lang === 'en' ? '' : 'none');
+  document.querySelectorAll('.bbq-nl').forEach(el => el.style.display = lang === 'nl' ? '' : 'none');
+  document.getElementById('bbq-lang-en').style.background = lang === 'en' ? '#534AB7' : 'white';
+  document.getElementById('bbq-lang-en').style.color      = lang === 'en' ? 'white'   : '#888';
+  document.getElementById('bbq-lang-nl').style.background = lang === 'nl' ? '#534AB7' : 'white';
+  document.getElementById('bbq-lang-nl').style.color      = lang === 'nl' ? 'white'   : '#888';
+}
+</script>
 
 <div id="media-section" style="width:100%;max-width:960px;margin-top:14px;">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -1071,6 +1251,17 @@ function renderStagesTable() {
       } else {
         sizeHtml2425 = '<span style="font-size:11px;color:#ddd;">—</span>';
       }
+      const driverHtml2425 = allFinal.length > 0
+        ? allFinal.map(r => {
+            const label = r.driver === true  ? '🚐 Driving ✎'
+                        : r.driver === false ? 'Not driving ✎'
+                        : '+ Driver?';
+            const cls   = r.driver === true  ? 'st-driver-btn is-driver'
+                        : r.driver === false ? 'st-driver-btn no-driver'
+                        : 'st-driver-btn';
+            return `<div><button class="${cls}" onclick="toggleDriver(${r._slot},${r._idx})">${r.name.split(' ')[0]}: ${label}</button></div>`;
+          }).join('')
+        : '<span style="font-size:11px;color:#ddd;">—</span>';
       rows.push(`<tr>
         <td class="st-num">E24–25</td>
         <td class="st-name">Oude Markt → UT track</td>
@@ -1083,6 +1274,7 @@ function renderStagesTable() {
           ${menBtn}
         </td>
         <td>${sizeHtml2425}</td>
+        <td>${driverHtml2425}</td>
       </tr>`);
       i += 2;
       continue;
@@ -1109,6 +1301,17 @@ function renderStagesTable() {
     } else {
       sizeHtml = '<span style="font-size:11px;color:#ddd;">—</span>';
     }
+    const driverHtml = rList.length > 0
+      ? rList.map((r, ri) => {
+          const label = r.driver === true  ? '🚐 Driving ✎'
+                      : r.driver === false ? 'Not driving ✎'
+                      : '+ Driver?';
+          const cls   = r.driver === true  ? 'st-driver-btn is-driver'
+                      : r.driver === false ? 'st-driver-btn no-driver'
+                      : 'st-driver-btn';
+          return `<div><button class="${cls}" onclick="toggleDriver(${e.id},${ri})">${label}</button></div>`;
+        }).join('')
+      : '<span style="font-size:11px;color:#ddd;">—</span>';
     rows.push(`<tr>
       <td class="st-num">E${e.id}</td>
       <td class="st-name">${e.name}</td>
@@ -1118,6 +1321,7 @@ function renderStagesTable() {
       <td><div class="st-runners">${runnersHtml}</div></td>
       <td>${tableBtn}</td>
       <td>${sizeHtml}</td>
+      <td>${driverHtml}</td>
     </tr>`);
     i++;
   }
@@ -1129,8 +1333,10 @@ function toggleStages() {
   const wrap  = document.getElementById('stages-wrap');
   const chev  = document.getElementById('stages-chevron');
   const hint  = document.getElementById('stages-toggle-hint');
+  const info  = document.getElementById('stages-info');
   const open  = wrap.style.display !== 'none';
   wrap.style.display  = open ? 'none' : 'block';
+  if (info) info.style.display = open ? 'none' : 'block';
   chev.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
   hint.textContent     = open ? 'Click to expand' : 'Click to collapse';
 }
@@ -1197,8 +1403,9 @@ function loadSignupsFromSheet() {
       refreshAll();
       renderStagesTable();
       renderBackupList();
+      renderDietChart();
     })
-    .catch(() => { renderStagesTable(); renderBackupList(); });
+    .catch(() => { renderStagesTable(); renderBackupList(); renderDietChart(); });
 }
 
 /* ── Detail panel ── */
@@ -1653,6 +1860,24 @@ document.getElementById('size-overlay').addEventListener('click', function(e) {
   if (e.target === this) closeSizePicker();
 });
 
+/* ── Driver toggle ── */
+function toggleDriver(stageId, idx) {
+  const r = (runners[stageId] || [])[idx];
+  if (!r) return;
+
+  // Cycle: undefined → true → false → true
+  r.driver = r.driver === true ? false : true;
+
+  // Sync to allSignups
+  const ai = allSignups.findIndex(s => s.name === r.name && s.stageId === stageId && s.signedAt === r.signedAt);
+  if (ai !== -1) allSignups[ai].driver = r.driver;
+
+  renderStagesTable();
+
+  // Sync to Sheet
+  postToSheet({ action: 'updateDriver', name: r.name, driver: r.driver });
+}
+
 document.getElementById('form-overlay').addEventListener('click', function(e) {
   if (e.target === this) closeForm();
 });
@@ -1717,7 +1942,7 @@ function openAdmin() {
   const tbody = document.getElementById('admin-tbody');
   const progText = document.getElementById('prog-text');
   if (tbody) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:#aaa;font-size:13px;">Loading from Google Sheet…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:#aaa;font-size:13px;">Loading from Google Sheet…</td></tr>';
   }
 
   fetch(API_URL + '?action=getSignups')
@@ -1868,6 +2093,7 @@ function renderTable() {
       <td class="td-comments">${s.comments||'—'}</td>
       <td style="font-size:11px;color:#aaa;white-space:nowrap;">${s.signedAt}</td>
       <td>${s.size ? `<span style="background:#E1F5EE;color:#085041;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500;">${s.size}</span>` : '<span style="color:#ddd;font-size:11px;">—</span>'}</td>
+      <td>${s.driver===true ? '<span style="background:#E1F5EE;color:#085041;font-size:11px;padding:2px 8px;border-radius:6px;">🚐 Yes</span>' : s.driver===false ? '<span style="color:#aaa;font-size:11px;">No</span>' : '<span style="color:#ddd;font-size:11px;">—</span>'}</td>
     </tr>`).join('');
 }
 
@@ -1886,11 +2112,11 @@ function exportExcel() {
 
   // Sheet 1: All sign-ups
   const allRows = [
-    ['Stage #', 'Stage name', 'Shift', 'Distance (km)', 'Name', 'Gender', 'Dietary requirements', 'Comments', 'Signed up at', 'Hoodie Size'],
-    ...allSignups.map(s => [s.stageId, s.stageName, blockNames[s.block], s.km, s.name, s.gender, s.diet||'', s.comments||'', s.signedAt, s.size||''])
+    ['Stage #', 'Stage name', 'Shift', 'Distance (km)', 'Name', 'Gender', 'Dietary requirements', 'Comments', 'Signed up at', 'Hoodie Size', 'Driver'],
+    ...allSignups.map(s => [s.stageId, s.stageName, blockNames[s.block], s.km, s.name, s.gender, s.diet||'', s.comments||'', s.signedAt, s.size||'', s.driver===true?'Yes':s.driver===false?'No':''])
   ];
   const ws1 = XLSX.utils.aoa_to_sheet(allRows);
-  ws1['!cols'] = [6,28,16,14,20,10,28,32,20,10].map(w => ({wch:w}));
+  ws1['!cols'] = [6,28,16,14,20,10,28,32,20,10,8].map(w => ({wch:w}));
   // Header row style
   const headerRange = XLSX.utils.decode_range(ws1['!ref']);
   for (let c = headerRange.s.c; c <= headerRange.e.c; c++) {
@@ -1933,6 +2159,67 @@ function exportExcel() {
 function closeVideo() {
   document.getElementById('yt-iframe').src = '';
   document.getElementById('video-overlay').classList.remove('open');
+}
+
+/* ── Diet chart ── */
+function renderDietChart() {
+  const container = document.getElementById('diet-chart-inner');
+  if (!container) return;
+
+  // Only count non-backup sign-ups
+  const signups = allSignups.filter(s => s.stageId !== 0);
+  if (!signups.length) {
+    container.innerHTML = '<div style="font-size:12px;color:#bbb;font-style:italic;">No sign-ups yet.</div>';
+    return;
+  }
+
+  // Categorise each diet string
+  const cats = { vegetarian: 0, lactoseFree: 0, other: 0, none: 0 };
+  signups.forEach(s => {
+    const d = (s.diet || '').toLowerCase().trim();
+    if (!d || d === 'none' || d === 'no' || d === '-' || d === 'n/a') {
+      cats.none++;
+    } else if (d.includes('vegan') || d.includes('vegetar')) {
+      cats.vegetarian++;
+    } else if (d.includes('lactose')) {
+      cats.lactoseFree++;
+    } else {
+      cats.other++;
+    }
+  });
+
+  const total = signups.length;
+  const bars = [
+    { label: 'No requirements', labelNl: 'Geen',             count: cats.none,       color: '#d5d2cc', icon: '✓' },
+    { label: 'Vegetarian/Vegan', labelNl: 'Vegetarisch/Vegan', count: cats.vegetarian, color: '#0F6E56', icon: '🥗' },
+    { label: 'Lactose-free',    labelNl: 'Lactosevrij',      count: cats.lactoseFree, color: '#3B82F6', icon: '🥛' },
+    { label: 'Other',           labelNl: 'Anders',           count: cats.other,       color: '#BA7517', icon: '⚠️' },
+  ].filter(b => b.count > 0);
+
+  const maxCount = Math.max(...bars.map(b => b.count), 1);
+
+  container.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      ${bars.map(b => `
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:160px;font-size:12px;color:#555;flex-shrink:0;display:flex;align-items:center;gap:6px;">
+            <span>${b.icon}</span>
+            <span>${b.label}</span>
+          </div>
+          <div style="flex:1;background:#f5f3ef;border-radius:4px;overflow:hidden;height:22px;">
+            <div style="height:100%;background:${b.color};border-radius:4px;width:${Math.max(b.count/maxCount*100,2)}%;transition:width 0.5s ease;display:flex;align-items:center;padding-left:8px;box-sizing:border-box;">
+              ${b.count/maxCount > 0.15 ? `<span style="font-size:11px;font-weight:600;color:white;">${b.count}</span>` : ''}
+            </div>
+          </div>
+          <div style="width:28px;font-size:12px;font-weight:600;color:#333;flex-shrink:0;text-align:right;">${b.count}</div>
+          <div style="width:36px;font-size:11px;color:#aaa;flex-shrink:0;text-align:right;">${Math.round(b.count/total*100)}%</div>
+        </div>
+      `).join('')}
+      <div style="font-size:11px;color:#aaa;margin-top:4px;border-top:0.5px solid #f0ede8;padding-top:8px;">
+        Based on ${total} sign-up${total===1?'':'s'} · self-reported dietary requirements
+      </div>
+    </div>
+  `;
 }
 </script>
 </body>
