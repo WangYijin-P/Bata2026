@@ -2525,9 +2525,9 @@ function renderWall() {
     const rot = WALL_ROTATIONS[i % WALL_ROTATIONS.length];
     const emoji = ['🏃','💨','🔥','⚡','🎉','🏅','💪','🎊','🌟','😎'][i % 10];
     return `<div class="wall-card" style="background:${c.bg};color:${c.text};transform:rotate(${rot}deg);">
-      <div class="wall-card-name">${emoji} ${escapeHtml(m.name)}</div>
-      <div class="wall-card-msg">${escapeHtml(m.message)}</div>
-      <div class="wall-card-time">${m.postedAt || ''}</div>
+      <div class="wall-card-name">${emoji} ${escapeHtml(m.name || m['Name'] || '')}</div>
+      <div class="wall-card-msg">${escapeHtml(m.message || m['Message'] || '')}</div>
+      <div class="wall-card-time">${m.postedAt || m['Posted at'] || ''}</div>
     </div>`;
   }).join('');
 }
