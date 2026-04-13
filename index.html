@@ -460,32 +460,85 @@ body {
     <p id="size-modal-sub">Maattabel (Maten in cm) — Maattolerantie: ±2-3 cm</p>
 
     <!-- T-shirt measurement diagram -->
-    <div style="display:flex;align-items:center;justify-content:center;margin-bottom:14px;background:#f5f3ef;border-radius:10px;padding:14px 10px;">
-      <svg viewBox="0 0 220 160" width="220" height="160" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
-        <!-- T-shirt shape -->
-        <path d="M70 20 L40 50 L60 58 L60 140 L160 140 L160 58 L180 50 L150 20 Q130 34 110 34 Q90 34 70 20Z"
-              fill="#EEEDFE" stroke="#534AB7" stroke-width="2" stroke-linejoin="round"/>
-        <!-- Collar -->
-        <path d="M70 20 Q90 40 110 40 Q130 40 150 20" fill="none" stroke="#534AB7" stroke-width="1.5"/>
-        <!-- Length arrow (vertical) -->
-        <line x1="168" y1="58" x2="168" y2="140" stroke="#534AB7" stroke-width="1.2" stroke-dasharray="3,2"/>
-        <line x1="163" y1="60" x2="173" y2="60" stroke="#534AB7" stroke-width="1.5"/>
-        <line x1="163" y1="140" x2="173" y2="140" stroke="#534AB7" stroke-width="1.5"/>
-        <text x="176" y="100" font-size="9" fill="#534AB7" font-family="system-ui" font-weight="500">Lengte</text>
-        <!-- Width arrow (horizontal) -->
-        <line x1="60" y1="150" x2="160" y2="150" stroke="#534AB7" stroke-width="1.2" stroke-dasharray="3,2"/>
-        <line x1="60" y1="145" x2="60" y2="155" stroke="#534AB7" stroke-width="1.5"/>
-        <line x1="160" y1="145" x2="160" y2="155" stroke="#534AB7" stroke-width="1.5"/>
-        <text x="88" y="160" font-size="9" fill="#534AB7" font-family="system-ui" font-weight="500">Breedte (½ omtrek)</text>
-        <!-- DPM label on shirt -->
-        <text x="110" y="95" font-size="11" fill="#534AB7" font-family="system-ui" font-weight="700" text-anchor="middle" opacity="0.5">DPM</text>
-        <text x="110" y="108" font-size="8" fill="#534AB7" font-family="system-ui" text-anchor="middle" opacity="0.4">BATA 2026</text>
+    <div style="display:flex;align-items:center;justify-content:center;margin-bottom:14px;background:#f5f3ef;border-radius:10px;padding:16px 12px;gap:14px;">
+      <!--
+        SVG viewBox: 260 wide × 200 tall
+        T-shirt body: x 60–200, y 30–170  (width=140, height=140)
+        Shoulder seam: y=50 (where sleeve meets body)
+        Collar: round U-shape centered at x=130
+        Sleeves: short, horizontal, stubby
+        Lengte arrow: right side, from y=50 (shoulder) to y=170 (hem), x=215
+        Breedte arrow: bottom, from x=60 to x=200 (full body width), y=185
+      -->
+      <svg viewBox="0 0 260 200" width="200" height="154" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+
+        <!-- ── T-shirt silhouette ── -->
+        <!--
+          Start at left shoulder point (60,50), go left+up for sleeve tip,
+          back to armhole, down body side, across hem, up right side,
+          right armhole, right sleeve, back to right shoulder,
+          then collar curve back to left shoulder.
+          Collar: U-shape dipping to y=68
+        -->
+        <path d="
+          M 95,30
+          Q 130,30 165,30
+          L 200,50
+          L 215,42
+          L 220,58
+          L 200,65
+          L 200,170
+          L 60,170
+          L 60,65
+          L 40,58
+          L 45,42
+          L 60,50
+          Q 95,30 95,30
+          Z
+        " fill="#EEEDFE" stroke="#534AB7" stroke-width="1.8" stroke-linejoin="round"/>
+
+        <!-- Collar U-shape -->
+        <path d="M 95,30 Q 110,62 130,64 Q 150,62 165,30"
+              fill="white" stroke="#534AB7" stroke-width="1.8" stroke-linejoin="round"/>
+
+        <!-- Shoulder seam line (horizontal, subtle) -->
+        <line x1="60" y1="50" x2="200" y2="50" stroke="#534AB7" stroke-width="0.8" stroke-dasharray="4,3" opacity="0.4"/>
+
+        <!-- DPM text on shirt -->
+        <text x="130" y="118" font-size="13" fill="#534AB7" font-family="system-ui" font-weight="700" text-anchor="middle" opacity="0.35">DPM</text>
+        <text x="130" y="133" font-size="9"  fill="#534AB7" font-family="system-ui" text-anchor="middle" opacity="0.28">BATA 2026</text>
+
+        <!-- ── Lengte annotation (right side, shoulder→hem) ── -->
+        <!-- dashed reference lines from shirt edge to annotation line -->
+        <line x1="200" y1="50"  x2="228" y2="50"  stroke="#888" stroke-width="0.8" stroke-dasharray="3,2"/>
+        <line x1="200" y1="170" x2="228" y2="170" stroke="#888" stroke-width="0.8" stroke-dasharray="3,2"/>
+        <!-- solid arrow line -->
+        <line x1="225" y1="53"  x2="225" y2="167" stroke="#534AB7" stroke-width="1.4"/>
+        <!-- arrowheads -->
+        <polygon points="225,50  221,58  229,58"  fill="#534AB7"/>
+        <polygon points="225,170 221,162 229,162" fill="#534AB7"/>
+        <!-- label -->
+        <text x="232" y="114" font-size="9" fill="#534AB7" font-family="system-ui" font-weight="600" dominant-baseline="middle">Lengte</text>
+
+        <!-- ── Breedte annotation (bottom, full body width) ── -->
+        <!-- dashed reference lines -->
+        <line x1="60"  y1="170" x2="60"  y2="188" stroke="#888" stroke-width="0.8" stroke-dasharray="3,2"/>
+        <line x1="200" y1="170" x2="200" y2="188" stroke="#888" stroke-width="0.8" stroke-dasharray="3,2"/>
+        <!-- solid arrow line -->
+        <line x1="63"  y1="186" x2="197" y2="186" stroke="#534AB7" stroke-width="1.4"/>
+        <!-- arrowheads -->
+        <polygon points="60,186  68,182  68,190"  fill="#534AB7"/>
+        <polygon points="200,186 192,182 192,190" fill="#534AB7"/>
+        <!-- label -->
+        <text x="130" y="198" font-size="9" fill="#534AB7" font-family="system-ui" font-weight="600" text-anchor="middle">Breedte</text>
+
       </svg>
-      <div style="margin-left:12px;font-size:11px;color:#666;line-height:1.6;">
-        <div style="font-weight:600;color:#3C3489;margin-bottom:4px;">Hoe meten?</div>
-        <div>📏 <b>Lengte</b>: schoudernaat → zoom</div>
-        <div>📏 <b>Breedte</b>: oksel → oksel (½ omtrek)</div>
-        <div style="margin-top:6px;color:#aaa;font-size:10px;">Bij twijfel, kies de grotere maat</div>
+
+      <div style="font-size:11px;color:#555;line-height:1.8;">
+        <div style="font-weight:600;color:#3C3489;margin-bottom:5px;">Hoe meten?</div>
+        <div>↕ <b>Lengte</b>: schoudernaat → zoom</div>
+        <div>↔ <b>Breedte</b>: oksel → oksel</div>
+        <div style="margin-top:7px;font-size:10px;color:#aaa;line-height:1.5;">Twijfel? Kies de<br>grotere maat.</div>
       </div>
     </div>
 
@@ -971,10 +1024,7 @@ function removeBackup(index) {
   const gi = allSignups.findIndex(s => s.stageId===0 && s.name===removed.name && s.signedAt===removed.signedAt);
   if (gi !== -1) allSignups.splice(gi, 1);
   renderBackupList();
-  fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify({action:'deleteSignup', stageId:0, name:removed.name, signedAt:removed.signedAt})
-  }).catch(err => console.warn(err));
+  postToSheet({action:'deleteSignup', stageId:0, name:removed.name, signedAt:removed.signedAt});
 }
 
 function renderStagesTable() {
@@ -1240,18 +1290,7 @@ function removeRunner(id, index) {
   refreshAll(); updateProgress(); renderStagesTable();
 
   // 同步删除 Google Sheet 里的记录
-  fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify({
-      action:    'deleteSignup',
-      stageId:   removed.stageId,
-      name:      removed.name,
-      signedAt:  removed.signedAt
-    })
-  })
-  .then(r => r.json())
-  .then(res => { if (!res.ok) console.warn('Sheet delete failed:', res.error); })
-  .catch(err => console.warn('Network error:', err));
+  postToSheet({action:'deleteSignup', stageId:removed.stageId, name:removed.name, signedAt:removed.signedAt});
 }
 
 /* ── Sign-up form ── */
@@ -1481,15 +1520,7 @@ function submitForm() {
 
   // 异步发送到 Google Sheet
   const btn = document.getElementById('submit-btn');
-  fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify({action: 'signup', ...record})
-  })
-  .then(r => r.json())
-  .then(res => {
-    if (!res.ok) console.warn('Sheet write failed:', res.error);
-  })
-  .catch(err => console.warn('Network error:', err));
+  postToSheet({action: 'signup', ...record});
 }
 
 function updateProgress() {
@@ -1501,6 +1532,25 @@ function updateProgress() {
   if (text) text.textContent = `${covered} / 25 stages covered`;
 }
 
+
+
+/* ── Unified POST helper — no-cors bypasses preflight, request always reaches GAS ── */
+function postToSheet(payload) {
+  console.log('postToSheet sending:', JSON.stringify(payload));
+  return fetch(API_URL, {
+    method: 'POST',
+    mode:   'no-cors',
+    body:   JSON.stringify(payload)
+  })
+  .then(() => {
+    console.log('postToSheet: sent ok (no-cors opaque)');
+    return {ok: true, opaque: true};
+  })
+  .catch(err => {
+    console.warn('postToSheet error:', err);
+    return {ok: false, error: err.toString()};
+  });
+}
 
 /* ── Size picker ── */
 let sizeTarget  = null;  // { stageId, sheetStageId, idx, name, signedAt }
@@ -1568,23 +1618,18 @@ function confirmSize() {
   const confirmBtn = document.getElementById('size-confirm-btn');
   const payload = { action: 'updateSize', stageId: sheetStageId, name, size: selectedSize };
 
-  fetch(API_URL, {
-    method:  'POST',
-    body:    JSON.stringify(payload)
-  })
-  .then(r => r.json())
+  postToSheet(payload)
   .then(res => {
-    if (res.ok) {
-      console.log('✅ Size synced to Sheet:', name, selectedSize);
+    if (res && (res.ok || res.opaque)) {
+      console.log('✅ Size sent to Sheet:', name, selectedSize);
     } else {
-      console.warn('⚠️ updateSize failed:', res.error);
-      // Show a subtle toast so user knows it didn't save to sheet
-      showSizeToast('⚠️ Could not save to server. Size is stored locally.', '#BA7517');
+      console.warn('⚠️ updateSize response:', res);
+      showSizeToast('⚠️ Could not confirm save. Check sheet manually.', '#BA7517');
     }
   })
   .catch(err => {
-    console.warn('updateSize network error:', err);
-    showSizeToast('⚠️ Network error. Size saved locally only.', '#BA7517');
+    console.warn('updateSize error:', err);
+    showSizeToast('⚠️ Network error. Size stored locally only.', '#BA7517');
   });
 }
 
