@@ -751,6 +751,22 @@ if (!sessionStorage.getItem('bata_session')) {
   sessionStorage.setItem('bata_session', Math.random().toString(36).slice(2));
 }
 const SESSION_TOKEN = sessionStorage.getItem('bata_session');
+
+// Size 로컬 캐시: {name_stageId: size}
+const SIZE_CACHE_KEY = 'bata_size_cache';
+function saveSizeCache(name, stageId, size) {
+  try {
+    const cache = JSON.parse(sessionStorage.getItem(SIZE_CACHE_KEY) || '{}');
+    cache[name + '_' + stageId] = size;
+    sessionStorage.setItem(SIZE_CACHE_KEY, JSON.stringify(cache));
+  } catch(e) {}
+}
+function getSizeCache(name, stageId) {
+  try {
+    const cache = JSON.parse(sessionStorage.getItem(SIZE_CACHE_KEY) || '{}');
+    return cache[name + '_' + stageId] || '';
+  } catch(e) { return ''; }
+}
 const MAX_PER_STAGE = 1; // 每个 stage 最多报名人数
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbzhniWTgMgdfz_umRwa6Xy95I2APqjNJfOppONZ61q078Gl0I5Myvgpri1TNnd2isrKNg/exec';
@@ -1084,7 +1100,7 @@ function loadSignupsFromSheet() {
           diet:      row['Dietary Requirements'] || '',
           comments:  row['Comments']     || '',
           signedAt:  row['Signed up at'] || '',
-          size:      row['Shirt Size'] || ''
+          size:      row['Shirt Size'] || getSizeCache(row['Name'] || '', Number(row['Stage #'])) || ''
         };
         if (!runners[id]) runners[id] = [];
         // 去重
@@ -1496,6 +1512,7 @@ function confirmSize() {
     return;
   }
   r.size = selectedSize;
+  saveSizeCache(r.name, stageId, selectedSize);
   // update allSignups too
   const ai = allSignups.findIndex(s => s.name===r.name && s.stageId===stageId && s.signedAt===r.signedAt);
   if (ai !== -1) allSignups[ai].size = selectedSize;
@@ -1506,7 +1523,13 @@ function confirmSize() {
   fetch(API_URL, {
     method: 'POST',
     body: JSON.stringify({action:'updateSize', stageId, name, signedAt:r.signedAt, size:selectedSize})
-  }).catch(err => console.warn(err));
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (!res.ok) console.warn('updateSize failed:', res.error);
+    else console.log('Size saved:', res.message);
+  })
+  .catch(err => console.warn('updateSize error:', err));
 }
 
 document.getElementById('size-overlay').addEventListener('click', function(e) {
