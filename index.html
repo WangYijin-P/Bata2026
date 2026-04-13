@@ -670,7 +670,7 @@ body {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<!-- XLSX loaded on demand -->
 <script>
 const etappes = [
   // AVOND PLOEG (Night, 1-9)
@@ -1011,8 +1011,13 @@ function openFormFromTable(id, preGender) {
 
 window.addEventListener('load', function() {
   drawLines();
-  setTimeout(loadMediaFromDrive, 800);
   loadSignupsFromSheet();
+  // Media loaded lazily when scrolled into view
+  const mediaObs = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) { loadMediaFromDrive(); mediaObs.disconnect(); }
+  }, {rootMargin: "200px"});
+  const mediaSection = document.getElementById("media-section");
+  if (mediaSection) mediaObs.observe(mediaSection);
 });
 
 function loadSignupsFromSheet() {
@@ -1684,6 +1689,13 @@ function renderTable() {
 
 /* ── Excel export ── */
 function exportExcel() {
+  if (typeof XLSX === 'undefined') {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload = exportExcel;
+    document.head.appendChild(s);
+    return;
+  }
   if (!allSignups.length) return;
 
   const wb = XLSX.utils.book_new();
