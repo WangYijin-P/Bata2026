@@ -543,8 +543,8 @@ body {
           <th>Distance</th>
           <th>Category</th>
           <th>Runners</th>
+          <th>Sign up</th>
           <th>Size</th>
-          <th></th>
         </tr>
       </thead>
       <tbody id="stages-tbody"></tbody>
@@ -945,11 +945,11 @@ function renderStagesTable() {
         <td style="color:#888;white-space:nowrap;">7.8 km</td>
         <td style="color:#888;">Men &amp; Women</td>
         <td><div class="st-runners">${runnersHtml}</div></td>
-        <td>${sizeHtml2425}</td>
         <td style="display:flex;gap:6px;flex-wrap:wrap;">
           ${womenBtn}
           ${menBtn}
         </td>
+        <td>${sizeHtml2425}</td>
       </tr>`);
       i += 2;
       continue;
@@ -979,8 +979,8 @@ function renderStagesTable() {
       <td style="color:#888;white-space:nowrap;">${e.km} km</td>
       <td style="color:#888;">${genderLbl}</td>
       <td><div class="st-runners">${runnersHtml}</div></td>
-      <td>${sizeHtml}</td>
       <td>${tableBtn}</td>
+      <td>${sizeHtml}</td>
     </tr>`);
     i++;
   }
