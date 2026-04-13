@@ -1608,15 +1608,15 @@ function confirmSize() {
   // 3. Persist to sessionStorage cache (survives tab refresh)
   saveSizeCache(name, stageId, selectedSize);
 
-  // 4. Update UI immediately
+  // 4. Build payload BEFORE closing (closeSizePicker resets selectedSize to null)
+  const payload = { action: 'updateSize', stageId: sheetStageId, name, size: selectedSize };
+
+  // 5. Update UI
   closeSizePicker();
   renderStagesTable();
   if (selectedId === stageId || selectedId === 24 || selectedId === 25) showDetail(selectedId || stageId);
 
-  // 5. Sync to Google Sheet
-  //    sheetStageId matches the "Stage #" column value in the sheet
-  const confirmBtn = document.getElementById('size-confirm-btn');
-  const payload = { action: 'updateSize', stageId: sheetStageId, name, size: selectedSize };
+  // 6. Sync to Google Sheet
 
   postToSheet(payload)
   .then(res => {
