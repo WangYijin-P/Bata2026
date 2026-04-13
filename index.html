@@ -347,10 +347,7 @@ body {
 }
 #size-modal h3 { font-size:16px; font-weight:500; margin-bottom:4px; }
 #size-modal p  { font-size:12px; color:#888; margin-bottom:16px; }
-#size-chart-img {
-  width:100%; border-radius:8px; border:0.5px solid #eee;
-  margin-bottom:18px; display:block;
-}
+#size-chart-img { /* inline table */ }
 .size-options {
   display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;
 }
@@ -455,10 +452,27 @@ body {
     <button id="size-close" onclick="closeSizePicker()">×</button>
     <h3 id="size-modal-title">Choose your shirt size</h3>
     <p id="size-modal-sub">Sizes are unisex. Check the chart below for guidance.</p>
-    <img id="size-chart-img"
-      src="https://www.batavierenrace.nl/content/banners/maattabel.png"
-      onerror="this.src='https://via.placeholder.com/480x220?text=Size+Chart'"
-      alt="Size chart" />
+    <div id="size-chart-img" style="background:#f9f8f6;border:0.5px solid #eee;border-radius:8px;overflow:hidden;margin-bottom:18px;">
+      <table style="width:100%;border-collapse:collapse;font-size:11px;text-align:center;">
+        <thead>
+          <tr style="background:#534AB7;color:white;">
+            <th style="padding:7px 10px;text-align:left;">Size</th>
+            <th style="padding:7px 6px;">Chest (cm)</th>
+            <th style="padding:7px 6px;">Waist (cm)</th>
+            <th style="padding:7px 6px;">Length (cm)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:white;"><td style="padding:6px 10px;text-align:left;font-weight:600;">XS</td><td style="padding:6px;">80–88</td><td style="padding:6px;">70–78</td><td style="padding:6px;">66</td></tr>
+          <tr style="background:#f5f3ef;"><td style="padding:6px 10px;text-align:left;font-weight:600;">S</td><td style="padding:6px;">88–96</td><td style="padding:6px;">78–86</td><td style="padding:6px;">68</td></tr>
+          <tr style="background:white;"><td style="padding:6px 10px;text-align:left;font-weight:600;">M</td><td style="padding:6px;">96–104</td><td style="padding:6px;">86–94</td><td style="padding:6px;">71</td></tr>
+          <tr style="background:#f5f3ef;"><td style="padding:6px 10px;text-align:left;font-weight:600;">L</td><td style="padding:6px;">104–112</td><td style="padding:6px;">94–102</td><td style="padding:6px;">73</td></tr>
+          <tr style="background:white;"><td style="padding:6px 10px;text-align:left;font-weight:600;">XL</td><td style="padding:6px;">112–120</td><td style="padding:6px;">102–110</td><td style="padding:6px;">75</td></tr>
+          <tr style="background:#f5f3ef;"><td style="padding:6px 10px;text-align:left;font-weight:600;">XXL</td><td style="padding:6px;">120–130</td><td style="padding:6px;">110–120</td><td style="padding:6px;">77</td></tr>
+        </tbody>
+      </table>
+      <div style="padding:6px 10px;font-size:10px;color:#aaa;text-align:right;">Unisex sizing — when in doubt, size up</div>
+    </div>
     <div class="size-options">
       <button class="size-btn" onclick="pickSize('XS')">XS</button>
       <button class="size-btn" onclick="pickSize('S')">S</button>
