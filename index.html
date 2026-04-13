@@ -1012,10 +1012,11 @@ function renderStagesTable() {
       let sizeHtml2425 = '';
       if (allFinal.length > 0) {
         sizeHtml2425 = allFinal.map((r) => {
-          return r.size
-            ? `<button class="st-size-btn has-size" onclick="openSizePicker(${r._slot},${r._idx})">${r.size} ✎</button>`
-            : `<button class="st-size-btn" onclick="openSizePicker(${r._slot},${r._idx})">+ Select size</button>`;
-        }).join(' ');
+          const label = r.size
+            ? `<button class="st-size-btn has-size" onclick="openSizePicker(${r._slot},${r._idx})" title="Click to change">${r.name.split(' ')[0]}: ${r.size} ✎</button>`
+            : `<button class="st-size-btn" onclick="openSizePicker(${r._slot},${r._idx})">${r.name.split(' ')[0]}: + size</button>`;
+          return `<div>${label}</div>`;
+        }).join('');
       } else {
         sizeHtml2425 = '<span style="font-size:11px;color:#ddd;">—</span>';
       }
@@ -1045,15 +1046,15 @@ function renderStagesTable() {
     const tableBtn = isFull
       ? `<button class="st-signup-btn" disabled style="background:#f0f0ee;color:#bbb;border-color:#ddd;cursor:not-allowed;">&#10003; Taken</button>`
       : `<button class="st-signup-btn" onclick="openFormFromTable(${e.id})">Sign up</button>`;
-    // size cell for normal rows
-    // Size 열: 자기 것이면 버튼, 남의 것이면 크기만 표시, 아직 없으면 빈 버튼
+    // size cell: show runner name + size/button
     let sizeHtml = '';
     if (rList.length > 0) {
       sizeHtml = rList.map((r, ri) => {
-        return r.size
-          ? `<button class="st-size-btn has-size" onclick="openSizePicker(${e.id},${ri})">${r.size} ✎</button>`
+        const label = r.size
+          ? `<button class="st-size-btn has-size" onclick="openSizePicker(${e.id},${ri})" title="Click to change">${r.size} ✎</button>`
           : `<button class="st-size-btn" onclick="openSizePicker(${e.id},${ri})">+ Select size</button>`;
-      }).join(' ');
+        return `<div style="display:flex;align-items:center;gap:5px;">${label}</div>`;
+      }).join('');
     } else {
       sizeHtml = '<span style="font-size:11px;color:#ddd;">—</span>';
     }
@@ -1502,21 +1503,25 @@ function updateProgress() {
 
 
 /* ── Size picker ── */
-let sizeTarget = null; // {stageId, runnerIndex, name}
+let sizeTarget  = null;  // { stageId, sheetStageId, idx, name, signedAt }
 let selectedSize = null;
 
 function openSizePicker(stageId, idx) {
-  const slot = (stageId === 24 || stageId === 25)
-    ? [...(runners[24]||[]).map(r=>({...r,_slot:24})), ...(runners[25]||[]).map(r=>({...r,_slot:25}))]
-    : (runners[stageId]||[]);
-  const r = stageId === 24 || stageId === 25 ? slot[idx] : (runners[stageId]||[])[idx];
+  // For E24/25 the idx passed is already into the correct runners slot
+  const r = (runners[stageId] || [])[idx];
   if (!r) return;
-  sizeTarget = {stageId: r._slot || stageId, idx, name: r.name};
+
+  // sheetStageId = the Stage # actually stored in Google Sheet
+  // E24 → women → sheet has "24", E25 → men → sheet has "25" (or original stageId)
+  // We keep original numeric stageId for the Sheet lookup (Apps Script matches on Stage #)
+  const sheetStageId = r.stageId !== undefined ? r.stageId : stageId;
+
+  sizeTarget   = { stageId, sheetStageId, idx, name: r.name, signedAt: r.signedAt };
   selectedSize = r.size || null;
-  document.getElementById('size-modal-title').textContent = 'Shirt size for ' + r.name;
-  // highlight existing selection
+
+  document.getElementById('size-modal-title').textContent = 'Shirt size — ' + r.name;
   document.querySelectorAll('.size-btn').forEach(b => {
-    b.classList.toggle('selected', b.textContent === selectedSize);
+    b.classList.toggle('selected', b.textContent.trim() === selectedSize);
   });
   document.getElementById('size-confirm-btn').disabled = !selectedSize;
   document.getElementById('size-overlay').classList.add('open');
@@ -1524,47 +1529,78 @@ function openSizePicker(stageId, idx) {
 
 function closeSizePicker() {
   document.getElementById('size-overlay').classList.remove('open');
-  sizeTarget = null; selectedSize = null;
+  sizeTarget   = null;
+  selectedSize = null;
 }
 
 function pickSize(s) {
   selectedSize = s;
-  document.querySelectorAll('.size-btn').forEach(b => b.classList.toggle('selected', b.textContent === s));
+  document.querySelectorAll('.size-btn').forEach(b =>
+    b.classList.toggle('selected', b.textContent.trim() === s)
+  );
   document.getElementById('size-confirm-btn').disabled = false;
 }
 
 function confirmSize() {
   if (!sizeTarget || !selectedSize) return;
-  const {stageId, idx, name} = sizeTarget;
-  const r = (runners[stageId]||[])[idx];
-  if (!r) return;
-  // 자기 것만 저장 (session 없어도 이름으로 확인)
-  if (r.session && r.session !== SESSION_TOKEN) {
-    alert("You can only update your own size.");
-    return;
-  }
-  r.size = selectedSize;
-  saveSizeCache(r.name, stageId, selectedSize);
-  // update allSignups too
-  const ai = allSignups.findIndex(s => s.name===r.name && s.stageId===stageId && s.signedAt===r.signedAt);
+  const { stageId, sheetStageId, idx, name, signedAt } = sizeTarget;
+
+  // 1. Update local runners array
+  const r = (runners[stageId] || [])[idx];
+  if (r) r.size = selectedSize;
+
+  // 2. Update allSignups
+  const ai = allSignups.findIndex(s =>
+    s.name === name && s.stageId === stageId && s.signedAt === signedAt
+  );
   if (ai !== -1) allSignups[ai].size = selectedSize;
+
+  // 3. Persist to sessionStorage cache (survives tab refresh)
+  saveSizeCache(name, stageId, selectedSize);
+
+  // 4. Update UI immediately
   closeSizePicker();
   renderStagesTable();
-  showDetail(stageId);
-  // sync to Sheet
-  const payload = {action:'updateSize', stageId: stageId, name: name, size: selectedSize};
-  console.log('Sending updateSize:', payload);
+  if (selectedId === stageId || selectedId === 24 || selectedId === 25) showDetail(selectedId || stageId);
+
+  // 5. Sync to Google Sheet
+  //    sheetStageId matches the "Stage #" column value in the sheet
+  const confirmBtn = document.getElementById('size-confirm-btn');
+  const payload = { action: 'updateSize', stageId: sheetStageId, name, size: selectedSize };
+
   fetch(API_URL, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(payload)
+    method:  'POST',
+    body:    JSON.stringify(payload)
   })
-  .then(resp => resp.json())
+  .then(r => r.json())
   .then(res => {
-    if (!res.ok) console.warn('updateSize failed:', res.error);
-    else console.log('Size saved:', res.message);
+    if (res.ok) {
+      console.log('✅ Size synced to Sheet:', name, selectedSize);
+    } else {
+      console.warn('⚠️ updateSize failed:', res.error);
+      // Show a subtle toast so user knows it didn't save to sheet
+      showSizeToast('⚠️ Could not save to server. Size is stored locally.', '#BA7517');
+    }
   })
-  .catch(err => console.warn('updateSize error:', err));
+  .catch(err => {
+    console.warn('updateSize network error:', err);
+    showSizeToast('⚠️ Network error. Size saved locally only.', '#BA7517');
+  });
+}
+
+function showSizeToast(msg, color) {
+  let t = document.getElementById('size-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'size-toast';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:9px;font-size:13px;font-weight:500;color:white;z-index:9999;pointer-events:none;transition:opacity 0.4s;';
+    document.body.appendChild(t);
+  }
+  t.textContent  = msg;
+  t.style.background = color || '#534AB7';
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.opacity = '0'; }, 3200);
 }
 
 document.getElementById('size-overlay').addEventListener('click', function(e) {
