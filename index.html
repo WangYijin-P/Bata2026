@@ -332,6 +332,47 @@ body {
 .st-signup-btn:hover { background:#EEEDFE; }
 .st-signup-final { border-color:#BA7517; color:#BA7517; }
 .st-signup-final:hover { background:#FAEEDA; }
+
+/* ── Size picker modal ── */
+#size-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.45); z-index:3000;
+  align-items:center; justify-content:center;
+}
+#size-overlay.open { display:flex; }
+#size-modal {
+  background:white; border-radius:16px; padding:28px;
+  max-width:520px; width:90%; box-shadow:0 8px 40px rgba(0,0,0,0.18);
+  position:relative;
+}
+#size-modal h3 { font-size:16px; font-weight:500; margin-bottom:4px; }
+#size-modal p  { font-size:12px; color:#888; margin-bottom:16px; }
+#size-chart-img {
+  width:100%; border-radius:8px; border:0.5px solid #eee;
+  margin-bottom:18px; display:block;
+}
+.size-options {
+  display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;
+}
+.size-btn {
+  padding:8px 18px; border:1.5px solid #d5d2cc; border-radius:8px;
+  font-size:13px; font-weight:500; cursor:pointer; background:white;
+  transition:all 0.15s;
+}
+.size-btn:hover { border-color:#534AB7; color:#534AB7; background:#EEEDFE; }
+.size-btn.selected { border-color:#534AB7; background:#534AB7; color:white; }
+#size-confirm-btn {
+  width:100%; padding:11px; background:#534AB7; color:white;
+  border:none; border-radius:9px; font-size:14px; font-weight:500;
+  cursor:pointer;
+}
+#size-confirm-btn:disabled { background:#ccc; cursor:not-allowed; }
+#size-close { position:absolute; top:14px; right:16px; font-size:20px;
+  background:none; border:none; cursor:pointer; color:#aaa; }
+.st-size-tag { font-size:11px; background:#E1F5EE; color:#085041;
+  padding:2px 8px; border-radius:6px; cursor:pointer; }
+.st-size-tag:hover { background:#c5eadb; }
+.st-no-size { font-size:11px; color:#ccc; cursor:pointer; font-style:italic; }
 </style>
 </head>
 <body>
@@ -407,7 +448,30 @@ body {
   </div>
 
   <!-- Sign-up form modal -->
-  <div id="form-overlay">
+  
+<!-- Size picker modal -->
+<div id="size-overlay">
+  <div id="size-modal">
+    <button id="size-close" onclick="closeSizePicker()">×</button>
+    <h3 id="size-modal-title">Choose your shirt size</h3>
+    <p id="size-modal-sub">Sizes are unisex. Check the chart below for guidance.</p>
+    <img id="size-chart-img"
+      src="https://www.batavierenrace.nl/content/banners/maattabel.png"
+      onerror="this.src='https://via.placeholder.com/480x220?text=Size+Chart'"
+      alt="Size chart" />
+    <div class="size-options">
+      <button class="size-btn" onclick="pickSize('XS')">XS</button>
+      <button class="size-btn" onclick="pickSize('S')">S</button>
+      <button class="size-btn" onclick="pickSize('M')">M</button>
+      <button class="size-btn" onclick="pickSize('L')">L</button>
+      <button class="size-btn" onclick="pickSize('XL')">XL</button>
+      <button class="size-btn" onclick="pickSize('XXL')">XXL</button>
+    </div>
+    <button id="size-confirm-btn" disabled onclick="confirmSize()">Confirm size</button>
+  </div>
+</div>
+
+<div id="form-overlay">
     <div id="form-modal">
       <h3 id="form-title">Sign up</h3>
       <p class="modal-sub" id="form-sub"></p>
@@ -486,6 +550,7 @@ body {
           <th>Distance</th>
           <th>Category</th>
           <th>Runners</th>
+          <th>Size</th>
           <th></th>
         </tr>
       </thead>
@@ -869,6 +934,17 @@ function renderStagesTable() {
       const menBtn    = menFull
         ? `<button class="st-signup-btn st-signup-final" disabled style="background:#f0f0ee;color:#bbb;border-color:#ddd;cursor:not-allowed;">&#10003; Men taken</button>`
         : `<button class="st-signup-btn st-signup-final" onclick="openFormFromTable(25,'M')">&#9794; Men</button>`;
+      const allFinal = [
+        ...(runners[24]||[]).map((r,ri)=>({...r,_slot:24,_idx:ri})),
+        ...(runners[25]||[]).map((r,ri)=>({...r,_slot:25,_idx:ri}))
+      ];
+      const sizeHtml2425 = allFinal.length > 0 ? allFinal.map((r,ri) => {
+        const isMine = r.session && r.session === SESSION_TOKEN;
+        if (!isMine) return r.size ? `<span class="st-size-tag" style="cursor:default;">${r.size}</span>` : '';
+        return r.size
+          ? `<span class="st-size-tag" onclick="openSizePicker(${r._slot},${r._idx})">${r.size} ✎</span>`
+          : `<span class="st-no-size" onclick="openSizePicker(${r._slot},${r._idx})">+ add size</span>`;
+      }).join(' ') : '—';
       rows.push(`<tr>
         <td class="st-num">E24–25</td>
         <td class="st-name">Oude Markt → UT track</td>
@@ -876,6 +952,7 @@ function renderStagesTable() {
         <td style="color:#888;white-space:nowrap;">7.8 km</td>
         <td style="color:#888;">Men &amp; Women</td>
         <td><div class="st-runners">${runnersHtml}</div></td>
+        <td>${sizeHtml2425}</td>
         <td style="display:flex;gap:6px;flex-wrap:wrap;">
           ${womenBtn}
           ${menBtn}
@@ -894,6 +971,14 @@ function renderStagesTable() {
     const tableBtn = isFull
       ? `<button class="st-signup-btn" disabled style="background:#f0f0ee;color:#bbb;border-color:#ddd;cursor:not-allowed;">&#10003; Taken</button>`
       : `<button class="st-signup-btn" onclick="openFormFromTable(${e.id})">Sign up</button>`;
+    // size cell for normal rows
+    const sizeHtml = rList.length > 0 ? rList.map((r,ri) => {
+      const isMine = r.session && r.session === SESSION_TOKEN;
+      if (!isMine) return r.size ? `<span class="st-size-tag" style="cursor:default;">${r.size}</span>` : '';
+      return r.size
+        ? `<span class="st-size-tag" onclick="openSizePicker(${e.id},${ri})">${r.size} ✎</span>`
+        : `<span class="st-no-size" onclick="openSizePicker(${e.id},${ri})">+ add size</span>`;
+    }).join(' ') : '—';
     rows.push(`<tr>
       <td class="st-num">E${e.id}</td>
       <td class="st-name">${e.name}</td>
@@ -901,6 +986,7 @@ function renderStagesTable() {
       <td style="color:#888;white-space:nowrap;">${e.km} km</td>
       <td style="color:#888;">${genderLbl}</td>
       <td><div class="st-runners">${runnersHtml}</div></td>
+      <td>${sizeHtml}</td>
       <td>${tableBtn}</td>
     </tr>`);
     i++;
@@ -962,7 +1048,8 @@ function loadSignupsFromSheet() {
           gender:    gender,
           diet:      row['Dietary Requirements'] || '',
           comments:  row['Comments']     || '',
-          signedAt:  row['Signed up at'] || ''
+          signedAt:  row['Signed up at'] || '',
+          size:      row['Shirt Size'] || ''
         };
         if (!runners[id]) runners[id] = [];
         // 去重
@@ -1329,6 +1416,62 @@ function updateProgress() {
   if (fill) fill.style.width = pct + '%';
   if (text) text.textContent = `${covered} / 25 stages covered`;
 }
+
+
+/* ── Size picker ── */
+let sizeTarget = null; // {stageId, runnerIndex, name}
+let selectedSize = null;
+
+function openSizePicker(stageId, idx) {
+  const slot = (stageId === 24 || stageId === 25)
+    ? [...(runners[24]||[]).map(r=>({...r,_slot:24})), ...(runners[25]||[]).map(r=>({...r,_slot:25}))]
+    : (runners[stageId]||[]);
+  const r = stageId === 24 || stageId === 25 ? slot[idx] : (runners[stageId]||[])[idx];
+  if (!r || !(r.session && r.session === SESSION_TOKEN)) return;
+  sizeTarget = {stageId: r._slot || stageId, idx, name: r.name};
+  selectedSize = r.size || null;
+  document.getElementById('size-modal-title').textContent = 'Shirt size for ' + r.name;
+  // highlight existing selection
+  document.querySelectorAll('.size-btn').forEach(b => {
+    b.classList.toggle('selected', b.textContent === selectedSize);
+  });
+  document.getElementById('size-confirm-btn').disabled = !selectedSize;
+  document.getElementById('size-overlay').classList.add('open');
+}
+
+function closeSizePicker() {
+  document.getElementById('size-overlay').classList.remove('open');
+  sizeTarget = null; selectedSize = null;
+}
+
+function pickSize(s) {
+  selectedSize = s;
+  document.querySelectorAll('.size-btn').forEach(b => b.classList.toggle('selected', b.textContent === s));
+  document.getElementById('size-confirm-btn').disabled = false;
+}
+
+function confirmSize() {
+  if (!sizeTarget || !selectedSize) return;
+  const {stageId, idx, name} = sizeTarget;
+  const r = (runners[stageId]||[])[idx];
+  if (!r) return;
+  r.size = selectedSize;
+  // update allSignups too
+  const ai = allSignups.findIndex(s => s.name===r.name && s.stageId===stageId && s.signedAt===r.signedAt);
+  if (ai !== -1) allSignups[ai].size = selectedSize;
+  closeSizePicker();
+  renderStagesTable();
+  showDetail(stageId);
+  // sync to Sheet
+  fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({action:'updateSize', stageId, name, signedAt:r.signedAt, size:selectedSize})
+  }).catch(err => console.warn(err));
+}
+
+document.getElementById('size-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeSizePicker();
+});
 
 document.getElementById('form-overlay').addEventListener('click', function(e) {
   if (e.target === this) closeForm();
