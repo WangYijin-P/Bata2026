@@ -1520,11 +1520,14 @@ function confirmSize() {
   renderStagesTable();
   showDetail(stageId);
   // sync to Sheet
+  const payload = {action:'updateSize', stageId: stageId, name: name, size: selectedSize};
+  console.log('Sending updateSize:', payload);
   fetch(API_URL, {
     method: 'POST',
-    body: JSON.stringify({action:'updateSize', stageId, name, signedAt:r.signedAt, size:selectedSize})
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload)
   })
-  .then(r => r.json())
+  .then(resp => resp.json())
   .then(res => {
     if (!res.ok) console.warn('updateSize failed:', res.error);
     else console.log('Size saved:', res.message);
