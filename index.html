@@ -367,9 +367,15 @@ body {
 #size-close { position:absolute; top:14px; right:16px; font-size:20px;
   background:none; border:none; cursor:pointer; color:#aaa; }
 .st-size-tag { font-size:11px; background:#E1F5EE; color:#085041;
-  padding:2px 8px; border-radius:6px; cursor:pointer; }
+  padding:2px 8px; border-radius:6px; cursor:pointer; display:inline-block; }
 .st-size-tag:hover { background:#c5eadb; }
-.st-no-size { font-size:11px; color:#ccc; cursor:pointer; font-style:italic; }
+.st-size-btn {
+  font-size:11px; padding:4px 12px; border-radius:6px; cursor:pointer;
+  border:0.5px solid #534AB7; background:white; color:#534AB7; white-space:nowrap;
+}
+.st-size-btn:hover { background:#EEEDFE; }
+.st-size-btn.has-size { background:#E1F5EE; color:#085041; border-color:#0F6E56; }
+.st-size-btn.has-size:hover { background:#c5eadb; }
 </style>
 </head>
 <body>
@@ -931,13 +937,20 @@ function renderStagesTable() {
         ...(runners[24]||[]).map((r,ri)=>({...r,_slot:24,_idx:ri})),
         ...(runners[25]||[]).map((r,ri)=>({...r,_slot:25,_idx:ri}))
       ];
-      const sizeHtml2425 = allFinal.length > 0 ? allFinal.map((r,ri) => {
-        const isMine = r.session && r.session === SESSION_TOKEN;
-        if (!isMine) return r.size ? `<span class="st-size-tag" style="cursor:default;">${r.size}</span>` : '';
-        return r.size
-          ? `<span class="st-size-tag" onclick="openSizePicker(${r._slot},${r._idx})">${r.size} ✎</span>`
-          : `<span class="st-no-size" onclick="openSizePicker(${r._slot},${r._idx})">+ add size</span>`;
-      }).join(' ') : '—';
+      let sizeHtml2425 = '';
+      if (allFinal.length > 0) {
+        sizeHtml2425 = allFinal.map((r) => {
+          const isMine = r.session && r.session === SESSION_TOKEN;
+          if (isMine) {
+            return r.size
+              ? `<button class="st-size-btn has-size" onclick="openSizePicker(${r._slot},${r._idx})">${r.size} ✎</button>`
+              : `<button class="st-size-btn" onclick="openSizePicker(${r._slot},${r._idx})">+ Select size</button>`;
+          }
+          return r.size ? `<span class="st-size-tag" style="cursor:default;">${r.size}</span>` : '';
+        }).join(' ');
+      } else {
+        sizeHtml2425 = '<span style="font-size:11px;color:#ddd;">—</span>';
+      }
       rows.push(`<tr>
         <td class="st-num">E24–25</td>
         <td class="st-name">Oude Markt → UT track</td>
@@ -965,13 +978,21 @@ function renderStagesTable() {
       ? `<button class="st-signup-btn" disabled style="background:#f0f0ee;color:#bbb;border-color:#ddd;cursor:not-allowed;">&#10003; Taken</button>`
       : `<button class="st-signup-btn" onclick="openFormFromTable(${e.id})">Sign up</button>`;
     // size cell for normal rows
-    const sizeHtml = rList.length > 0 ? rList.map((r,ri) => {
-      const isMine = r.session && r.session === SESSION_TOKEN;
-      if (!isMine) return r.size ? `<span class="st-size-tag" style="cursor:default;">${r.size}</span>` : '';
-      return r.size
-        ? `<span class="st-size-tag" onclick="openSizePicker(${e.id},${ri})">${r.size} ✎</span>`
-        : `<span class="st-no-size" onclick="openSizePicker(${e.id},${ri})">+ add size</span>`;
-    }).join(' ') : '—';
+    // Size 열: 자기 것이면 버튼, 남의 것이면 크기만 표시, 아직 없으면 빈 버튼
+    let sizeHtml = '';
+    if (rList.length > 0) {
+      sizeHtml = rList.map((r, ri) => {
+        const isMine = r.session && r.session === SESSION_TOKEN;
+        if (isMine) {
+          return r.size
+            ? `<button class="st-size-btn has-size" onclick="openSizePicker(${e.id},${ri})">${r.size} ✎</button>`
+            : `<button class="st-size-btn" onclick="openSizePicker(${e.id},${ri})">+ Select size</button>`;
+        }
+        return r.size ? `<span class="st-size-tag" style="cursor:default;">${r.size}</span>` : '';
+      }).join(' ');
+    } else {
+      sizeHtml = '<span style="font-size:11px;color:#ddd;">—</span>';
+    }
     rows.push(`<tr>
       <td class="st-num">E${e.id}</td>
       <td class="st-name">${e.name}</td>
