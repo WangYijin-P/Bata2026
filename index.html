@@ -458,6 +458,37 @@ body {
     <button id="size-close" onclick="closeSizePicker()">×</button>
     <h3 id="size-modal-title">Choose your shirt size</h3>
     <p id="size-modal-sub">Maattabel (Maten in cm) — Maattolerantie: ±2-3 cm</p>
+
+    <!-- T-shirt measurement diagram -->
+    <div style="display:flex;align-items:center;justify-content:center;margin-bottom:14px;background:#f5f3ef;border-radius:10px;padding:14px 10px;">
+      <svg viewBox="0 0 220 160" width="220" height="160" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+        <!-- T-shirt shape -->
+        <path d="M70 20 L40 50 L60 58 L60 140 L160 140 L160 58 L180 50 L150 20 Q130 34 110 34 Q90 34 70 20Z"
+              fill="#EEEDFE" stroke="#534AB7" stroke-width="2" stroke-linejoin="round"/>
+        <!-- Collar -->
+        <path d="M70 20 Q90 40 110 40 Q130 40 150 20" fill="none" stroke="#534AB7" stroke-width="1.5"/>
+        <!-- Length arrow (vertical) -->
+        <line x1="168" y1="58" x2="168" y2="140" stroke="#534AB7" stroke-width="1.2" stroke-dasharray="3,2"/>
+        <line x1="163" y1="60" x2="173" y2="60" stroke="#534AB7" stroke-width="1.5"/>
+        <line x1="163" y1="140" x2="173" y2="140" stroke="#534AB7" stroke-width="1.5"/>
+        <text x="176" y="100" font-size="9" fill="#534AB7" font-family="system-ui" font-weight="500">Lengte</text>
+        <!-- Width arrow (horizontal) -->
+        <line x1="60" y1="150" x2="160" y2="150" stroke="#534AB7" stroke-width="1.2" stroke-dasharray="3,2"/>
+        <line x1="60" y1="145" x2="60" y2="155" stroke="#534AB7" stroke-width="1.5"/>
+        <line x1="160" y1="145" x2="160" y2="155" stroke="#534AB7" stroke-width="1.5"/>
+        <text x="88" y="160" font-size="9" fill="#534AB7" font-family="system-ui" font-weight="500">Breedte (½ omtrek)</text>
+        <!-- DPM label on shirt -->
+        <text x="110" y="95" font-size="11" fill="#534AB7" font-family="system-ui" font-weight="700" text-anchor="middle" opacity="0.5">DPM</text>
+        <text x="110" y="108" font-size="8" fill="#534AB7" font-family="system-ui" text-anchor="middle" opacity="0.4">BATA 2026</text>
+      </svg>
+      <div style="margin-left:12px;font-size:11px;color:#666;line-height:1.6;">
+        <div style="font-weight:600;color:#3C3489;margin-bottom:4px;">Hoe meten?</div>
+        <div>📏 <b>Lengte</b>: schoudernaat → zoom</div>
+        <div>📏 <b>Breedte</b>: oksel → oksel (½ omtrek)</div>
+        <div style="margin-top:6px;color:#aaa;font-size:10px;">Bij twijfel, kies de grotere maat</div>
+      </div>
+    </div>
+
     <div style="margin-bottom:16px;border-radius:8px;overflow:hidden;border:0.5px solid #e8e5e0;font-size:12px;">
       <table style="width:100%;border-collapse:collapse;text-align:center;">
         <thead>
@@ -690,6 +721,7 @@ body {
             <th>Dietary</th>
             <th>Comments</th>
             <th>Signed up at</th>
+            <th>Shirt Size</th>
           </tr>
         </thead>
         <tbody id="admin-tbody"></tbody>
@@ -1603,7 +1635,7 @@ function openAdmin() {
   const tbody = document.getElementById('admin-tbody');
   const progText = document.getElementById('prog-text');
   if (tbody) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#aaa;font-size:13px;">Loading from Google Sheet…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:#aaa;font-size:13px;">Loading from Google Sheet…</td></tr>';
   }
 
   fetch(API_URL + '?action=getSignups')
@@ -1633,7 +1665,8 @@ function openAdmin() {
               gender:    row['Gender'],
               diet:      row['Dietary Requirements'],
               comments:  row['Comments'],
-              signedAt:  row['Signed up at']
+              signedAt:  row['Signed up at'],
+              size:      row['Shirt Size'] || ''
             };
             allSignups.push(record);
             if (!runners[record.stageId]) runners[record.stageId] = [];
@@ -1752,6 +1785,7 @@ function renderTable() {
       <td class="td-diet">${s.diet||'—'}</td>
       <td class="td-comments">${s.comments||'—'}</td>
       <td style="font-size:11px;color:#aaa;white-space:nowrap;">${s.signedAt}</td>
+      <td>${s.size ? `<span style="background:#E1F5EE;color:#085041;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500;">${s.size}</span>` : '<span style="color:#ddd;font-size:11px;">—</span>'}</td>
     </tr>`).join('');
 }
 
@@ -1770,11 +1804,11 @@ function exportExcel() {
 
   // Sheet 1: All sign-ups
   const allRows = [
-    ['Stage #', 'Stage name', 'Shift', 'Distance (km)', 'Name', 'Gender', 'Dietary requirements', 'Comments', 'Signed up at'],
-    ...allSignups.map(s => [s.stageId, s.stageName, blockNames[s.block], s.km, s.name, s.gender, s.diet||'', s.comments||'', s.signedAt])
+    ['Stage #', 'Stage name', 'Shift', 'Distance (km)', 'Name', 'Gender', 'Dietary requirements', 'Comments', 'Signed up at', 'Shirt Size'],
+    ...allSignups.map(s => [s.stageId, s.stageName, blockNames[s.block], s.km, s.name, s.gender, s.diet||'', s.comments||'', s.signedAt, s.size||''])
   ];
   const ws1 = XLSX.utils.aoa_to_sheet(allRows);
-  ws1['!cols'] = [6,28,16,14,20,10,28,32,20].map(w => ({wch:w}));
+  ws1['!cols'] = [6,28,16,14,20,10,28,32,20,10].map(w => ({wch:w}));
   // Header row style
   const headerRange = XLSX.utils.decode_range(ws1['!ref']);
   for (let c = headerRange.s.c; c <= headerRange.e.c; c++) {
