@@ -456,14 +456,14 @@ body {
 <div id="size-overlay">
   <div id="size-modal">
     <button id="size-close" onclick="closeSizePicker()">×</button>
-    <h3 id="size-modal-title">Choose your shirt size</h3>
+    <h3 id="size-modal-title">Choose your hoodie size</h3>
     <p id="size-modal-sub">Maattabel (Maten in cm) — Maattolerantie: ±2-3 cm</p>
 
-    <!-- T-shirt measurement diagram -->
+    <!-- Hoodie measurement diagram -->
     <div style="display:flex;align-items:center;justify-content:center;margin-bottom:14px;background:#f5f3ef;border-radius:10px;padding:16px 12px;gap:14px;">
       <!--
         SVG viewBox: 260 wide × 200 tall
-        T-shirt body: x 60–200, y 30–170  (width=140, height=140)
+        Hoodie body: x 60–200, y 30–170  (width=140, height=140)
         Shoulder seam: y=50 (where sleeve meets body)
         Collar: round U-shape centered at x=130
         Sleeves: short, horizontal, stubby
@@ -472,7 +472,7 @@ body {
       -->
       <svg viewBox="0 0 260 200" width="200" height="154" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
 
-        <!-- ── T-shirt silhouette ── -->
+        <!-- ── Hoodie silhouette ── -->
         <!--
           Start at left shoulder point (60,50), go left+up for sleeve tip,
           back to armhole, down body side, across hem, up right side,
@@ -638,7 +638,7 @@ body {
   <div class="sec-header" onclick="toggleStages()" style="cursor:pointer;user-select:none;">
     <div style="display:flex;align-items:center;gap:8px;">
       <h2>All 25 Stages</h2>
-      <span style="font-size:11px;color:#888;background:#f5f3ef;padding:3px 9px;border-radius:6px;">👕 Select your shirt size in the Size column after signing up</span>
+      <span style="font-size:11px;color:#888;background:#f5f3ef;padding:3px 9px;border-radius:6px;">🧥 Select your hoodie size in the Size column after signing up</span>
       <span id="stages-covered"></span>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
@@ -775,7 +775,7 @@ body {
             <th>Dietary</th>
             <th>Comments</th>
             <th>Signed up at</th>
-            <th>Shirt Size</th>
+            <th>Hoodie Size</th>
           </tr>
         </thead>
         <tbody id="admin-tbody"></tbody>
@@ -1184,7 +1184,7 @@ function loadSignupsFromSheet() {
           diet:      row['Dietary Requirements'] || '',
           comments:  row['Comments']     || '',
           signedAt:  row['Signed up at'] || '',
-          size:      row['Shirt Size'] || getSizeCache(row['Name'] || '', Number(row['Stage #'])) || ''
+          size:      row['Hoodie Size'] || getSizeCache(row['Name'] || '', Number(row['Stage #'])) || ''
         };
         if (!runners[id]) runners[id] = [];
         // 去重
@@ -1570,7 +1570,7 @@ function openSizePicker(stageId, idx) {
   sizeTarget   = { stageId, sheetStageId, idx, name: r.name, signedAt: r.signedAt };
   selectedSize = r.size || null;
 
-  document.getElementById('size-modal-title').textContent = 'Shirt size — ' + r.name;
+  document.getElementById('size-modal-title').textContent = 'Hoodie size — ' + r.name;
   document.querySelectorAll('.size-btn').forEach(b => {
     b.classList.toggle('selected', b.textContent.trim() === selectedSize);
   });
@@ -1748,7 +1748,7 @@ function openAdmin() {
               diet:      row['Dietary Requirements'],
               comments:  row['Comments'],
               signedAt:  row['Signed up at'],
-              size:      row['Shirt Size'] || ''
+              size:      row['Hoodie Size'] || ''
             };
             allSignups.push(record);
             if (!runners[record.stageId]) runners[record.stageId] = [];
@@ -1886,7 +1886,7 @@ function exportExcel() {
 
   // Sheet 1: All sign-ups
   const allRows = [
-    ['Stage #', 'Stage name', 'Shift', 'Distance (km)', 'Name', 'Gender', 'Dietary requirements', 'Comments', 'Signed up at', 'Shirt Size'],
+    ['Stage #', 'Stage name', 'Shift', 'Distance (km)', 'Name', 'Gender', 'Dietary requirements', 'Comments', 'Signed up at', 'Hoodie Size'],
     ...allSignups.map(s => [s.stageId, s.stageName, blockNames[s.block], s.km, s.name, s.gender, s.diet||'', s.comments||'', s.signedAt, s.size||''])
   ];
   const ws1 = XLSX.utils.aoa_to_sheet(allRows);
