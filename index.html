@@ -376,11 +376,20 @@ body {
 .st-size-btn:hover { background:#EEEDFE; }
 .st-size-btn.has-size { background:#E1F5EE; color:#085041; border-color:#0F6E56; }
 .st-size-btn.has-size:hover { background:#c5eadb; }
-.st-driver-btn { font-size:11px; padding:4px 12px; border-radius:6px; cursor:pointer; border:0.5px solid #d5d2cc; background:white; color:#888; white-space:nowrap; transition:all 0.15s; }
-.st-driver-btn:hover { border-color:#534AB7; color:#534AB7; background:#EEEDFE; }
-.st-driver-btn.is-driver { background:#E1F5EE; color:#085041; border-color:#0F6E56; font-weight:500; }
-.st-driver-btn.is-driver:hover { background:#c5eadb; }
-.st-driver-btn.no-driver { background:#f5f3ef; color:#aaa; border-color:#e0ddd8; }
+.st-driver-select {
+  font-size:11px; padding:4px 8px; border-radius:6px; cursor:pointer;
+  border:0.5px solid #d5d2cc; background:white; color:#888;
+  outline:none; font-family:inherit; transition:border-color 0.15s;
+  appearance:none; -webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23aaa' stroke-width='1.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 7px center;
+  padding-right:22px;
+}
+.st-driver-select:hover { border-color:#534AB7; }
+.st-driver-select:focus { border-color:#534AB7; }
+.st-driver-select.is-driving { background-color:#E1F5EE; color:#085041; border-color:#0F6E56; font-weight:500; }
+.st-driver-select.is-maybe   { background-color:#EEEDFE; color:#3C3489; border-color:#534AB7; font-weight:500; }
+.st-driver-select.is-no      { background-color:#f5f3ef; color:#aaa;    border-color:#e0ddd8; }
 </style>
 </head>
 <body>
@@ -1253,13 +1262,17 @@ function renderStagesTable() {
       }
       const driverHtml2425 = allFinal.length > 0
         ? allFinal.map(r => {
-            const label = r.driver === true  ? '🚐 Driving ✎'
-                        : r.driver === false ? 'Not driving ✎'
-                        : '+ Driver?';
-            const cls   = r.driver === true  ? 'st-driver-btn is-driver'
-                        : r.driver === false ? 'st-driver-btn no-driver'
-                        : 'st-driver-btn';
-            return `<div><button class="${cls}" onclick="toggleDriver(${r._slot},${r._idx})">${r.name.split(' ')[0]}: ${label}</button></div>`;
+            const val = r.driver === true ? 'yes' : r.driver === false ? 'no' : r.driver === 'maybe' ? 'maybe' : '';
+            const cls = val === 'yes' ? 'st-driver-select is-driving' : val === 'maybe' ? 'st-driver-select is-maybe' : val === 'no' ? 'st-driver-select is-no' : 'st-driver-select';
+            return `<div style="display:flex;align-items:center;gap:5px;">
+              <span style="font-size:11px;color:#888;">${r.name.split(' ')[0]}:</span>
+              <select class="${cls}" onchange="setDriver(${r._slot},${r._idx},this.value)" onclick="event.stopPropagation()">
+                <option value="" ${!val?'selected':''}>— Driver?</option>
+                <option value="yes"   ${val==='yes'  ?'selected':''}>🚐 Driving</option>
+                <option value="maybe" ${val==='maybe'?'selected':''}>🤔 Maybe</option>
+                <option value="no"    ${val==='no'   ?'selected':''}>✗ Not driving</option>
+              </select>
+            </div>`;
           }).join('')
         : '<span style="font-size:11px;color:#ddd;">—</span>';
       rows.push(`<tr>
@@ -1303,13 +1316,16 @@ function renderStagesTable() {
     }
     const driverHtml = rList.length > 0
       ? rList.map((r, ri) => {
-          const label = r.driver === true  ? '🚐 Driving ✎'
-                      : r.driver === false ? 'Not driving ✎'
-                      : '+ Driver?';
-          const cls   = r.driver === true  ? 'st-driver-btn is-driver'
-                      : r.driver === false ? 'st-driver-btn no-driver'
-                      : 'st-driver-btn';
-          return `<div><button class="${cls}" onclick="toggleDriver(${e.id},${ri})">${label}</button></div>`;
+          const val = r.driver === true ? 'yes' : r.driver === false ? 'no' : r.driver === 'maybe' ? 'maybe' : '';
+          const cls = val === 'yes' ? 'st-driver-select is-driving' : val === 'maybe' ? 'st-driver-select is-maybe' : val === 'no' ? 'st-driver-select is-no' : 'st-driver-select';
+          return `<div>
+            <select class="${cls}" onchange="setDriver(${e.id},${ri},this.value)" onclick="event.stopPropagation()">
+              <option value="" ${!val?'selected':''}>— Driver?</option>
+              <option value="yes"   ${val==='yes'  ?'selected':''}>🚐 Driving</option>
+              <option value="maybe" ${val==='maybe'?'selected':''}>🤔 Maybe</option>
+              <option value="no"    ${val==='no'   ?'selected':''}>✗ Not driving</option>
+            </select>
+          </div>`;
         }).join('')
       : '<span style="font-size:11px;color:#ddd;">—</span>';
     rows.push(`<tr>
@@ -1860,22 +1876,25 @@ document.getElementById('size-overlay').addEventListener('click', function(e) {
   if (e.target === this) closeSizePicker();
 });
 
-/* ── Driver toggle ── */
-function toggleDriver(stageId, idx) {
+/* ── Driver select ── */
+function setDriver(stageId, idx, value) {
   const r = (runners[stageId] || [])[idx];
   if (!r) return;
 
-  // Cycle: undefined → true → false → true
-  r.driver = r.driver === true ? false : true;
+  // Map select value to stored value
+  r.driver = value === 'yes' ? true : value === 'no' ? false : value === 'maybe' ? 'maybe' : undefined;
 
   // Sync to allSignups
   const ai = allSignups.findIndex(s => s.name === r.name && s.stageId === stageId && s.signedAt === r.signedAt);
   if (ai !== -1) allSignups[ai].driver = r.driver;
 
-  renderStagesTable();
+  // Update select style without full re-render
+  const cls = value === 'yes' ? 'st-driver-select is-driving' : value === 'maybe' ? 'st-driver-select is-maybe' : value === 'no' ? 'st-driver-select is-no' : 'st-driver-select';
+  event.target.className = cls;
 
   // Sync to Sheet
-  postToSheet({ action: 'updateDriver', name: r.name, driver: r.driver });
+  const driverVal = value === 'yes' ? 'Yes' : value === 'no' ? 'No' : value === 'maybe' ? 'Maybe' : '';
+  postToSheet({ action: 'updateDriver', name: r.name, driver: driverVal });
 }
 
 document.getElementById('form-overlay').addEventListener('click', function(e) {
