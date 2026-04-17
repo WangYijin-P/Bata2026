@@ -1277,7 +1277,7 @@ function renderStagesTable() {
       }
       const driverHtml2425 = allFinal.length > 0
         ? allFinal.map(r => {
-            const val = r.driver === true ? 'yes' : r.driver === false ? 'no' : r.driver === 'maybe' ? 'maybe' : '';
+            const val = (r.driver === true || r.driver === 'Yes') ? 'yes' : (r.driver === false || r.driver === 'No') ? 'no' : (r.driver === 'maybe' || r.driver === 'Maybe') ? 'maybe' : '';
             const cls = val === 'yes' ? 'st-driver-select is-driving' : val === 'maybe' ? 'st-driver-select is-maybe' : val === 'no' ? 'st-driver-select is-no' : 'st-driver-select';
             return `<div style="display:flex;align-items:center;gap:5px;">
               <span style="font-size:11px;color:#888;">${r.name.split(' ')[0]}:</span>
@@ -1331,7 +1331,7 @@ function renderStagesTable() {
     }
     const driverHtml = rList.length > 0
       ? rList.map((r, ri) => {
-          const val = r.driver === true ? 'yes' : r.driver === false ? 'no' : r.driver === 'maybe' ? 'maybe' : '';
+          const val = (r.driver === true || r.driver === 'Yes') ? 'yes' : (r.driver === false || r.driver === 'No') ? 'no' : (r.driver === 'maybe' || r.driver === 'Maybe') ? 'maybe' : '';
           const cls = val === 'yes' ? 'st-driver-select is-driving' : val === 'maybe' ? 'st-driver-select is-maybe' : val === 'no' ? 'st-driver-select is-no' : 'st-driver-select';
           return `<div>
             <select class="${cls}" onchange="setDriver(${e.id},${ri},this.value)" onclick="event.stopPropagation()">
@@ -2203,7 +2203,7 @@ function renderDietChart() {
   if (!container) return;
 
   // Only count non-backup sign-ups
-  const signups = allSignups.filter(s => s.stageId !== 0);
+  const signups = allSignups;
   if (!signups.length) {
     container.innerHTML = '<div style="font-size:12px;color:#bbb;font-style:italic;">No sign-ups yet.</div>';
     return;
