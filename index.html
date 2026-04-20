@@ -563,8 +563,9 @@ body {
 
       <div style="font-size:11px;color:#555;line-height:1.8;">
         <div style="font-weight:600;color:#3C3489;margin-bottom:5px;">Hoe meten?</div>
-        <div>↕ <b>Lengte</b>: schoudernaat → zoom</div>
-        <div>↔ <b>Breedte</b>: oksel → oksel</div>
+        <div>↕ <b>TF01</b>: total height from HSP</div>
+        <div>↔ <b>TE01</b>: ½ chest width at 1.5cm below armhole</div>
+        <div>↗ <b>TG02</b>: sleeve length</div>
         <div style="margin-top:7px;font-size:10px;color:#aaa;line-height:1.5;">Twijfel? Kies de<br>grotere maat.</div>
       </div>
     </div>
@@ -573,33 +574,43 @@ body {
       <table style="width:100%;border-collapse:collapse;text-align:center;">
         <thead>
           <tr style="background:#1a3a6b;color:white;">
-            <th style="padding:7px 10px;text-align:left;">Maat</th>
-            <th style="padding:7px 8px;">Lengte (cm)</th>
-            <th style="padding:7px 8px;">Breedte (cm)</th>
+            <th style="padding:7px 10px;text-align:left;">Size</th>
+            <th style="padding:7px 6px;">XS</th>
+            <th style="padding:7px 6px;">S</th>
+            <th style="padding:7px 6px;">M</th>
+            <th style="padding:7px 6px;">L</th>
+            <th style="padding:7px 6px;">XL</th>
+            <th style="padding:7px 6px;">XXL</th>
+            <th style="padding:7px 6px;">3XL</th>
+            <th style="padding:7px 6px;">4XL</th>
           </tr>
         </thead>
         <tbody>
-          <tr style="background:white;"><td style="padding:6px 10px;text-align:left;font-weight:600;">S</td><td>68.6</td><td>50.8</td></tr>
-          <tr style="background:#f0f4fa;"><td style="padding:6px 10px;text-align:left;font-weight:600;">M</td><td>71.1</td><td>55.9</td></tr>
-          <tr style="background:white;"><td style="padding:6px 10px;text-align:left;font-weight:600;">L</td><td>73.7</td><td>61</td></tr>
-          <tr style="background:#f0f4fa;"><td style="padding:6px 10px;text-align:left;font-weight:600;">XL</td><td>76.2</td><td>66</td></tr>
-          <tr style="background:white;"><td style="padding:6px 10px;text-align:left;font-weight:600;">2XL</td><td>78.7</td><td>71.1</td></tr>
-          <tr style="background:#f0f4fa;"><td style="padding:6px 10px;text-align:left;font-weight:600;">3XL</td><td>81.3</td><td>76.2</td></tr>
-          <tr style="background:white;"><td style="padding:6px 10px;text-align:left;font-weight:600;">4XL</td><td>83.8</td><td>81.3</td></tr>
-          <tr style="background:#f0f4fa;"><td style="padding:6px 10px;text-align:left;font-weight:600;">5XL</td><td>86.4</td><td>86.4</td></tr>
+          <tr style="background:white;">
+            <td style="padding:6px 10px;text-align:left;font-size:10px;color:#666;max-width:100px;line-height:1.4;">TE01 · ½ chest width<br><span style="color:#aaa;">(1.5cm below armhole)</span></td>
+            <td>49</td><td>52</td><td>55</td><td>58</td><td>61</td><td>64</td><td>67</td><td>70</td>
+          </tr>
+          <tr style="background:#f0f4fa;">
+            <td style="padding:6px 10px;text-align:left;font-size:10px;color:#666;line-height:1.4;">TF01 · Total height<br><span style="color:#aaa;">(from HSP)</span></td>
+            <td>69</td><td>71</td><td>73</td><td>75</td><td>77</td><td>79</td><td>81</td><td>83</td>
+          </tr>
+          <tr style="background:white;">
+            <td style="padding:6px 10px;text-align:left;font-size:10px;color:#666;line-height:1.4;">TG02 · Sleeve length</td>
+            <td>60.5</td><td>61.5</td><td>62.5</td><td>63.5</td><td>64.5</td><td>65.5</td><td>66.5</td><td>67.5</td>
+          </tr>
         </tbody>
       </table>
-      <div style="padding:6px 10px;font-size:10px;color:#888;border-top:0.5px solid #eee;">Krimptolerantie: 5% in lengte &amp; breedte, volgens internationale normen</div>
+      <div style="padding:6px 10px;font-size:10px;color:#888;border-top:0.5px solid #eee;">Measurements in cm · Herensweater met capuchon</div>
     </div>
     <div class="size-options">
+      <button class="size-btn" onclick="pickSize('XS')">XS</button>
       <button class="size-btn" onclick="pickSize('S')">S</button>
       <button class="size-btn" onclick="pickSize('M')">M</button>
       <button class="size-btn" onclick="pickSize('L')">L</button>
       <button class="size-btn" onclick="pickSize('XL')">XL</button>
-      <button class="size-btn" onclick="pickSize('2XL')">2XL</button>
+      <button class="size-btn" onclick="pickSize('XXL')">XXL</button>
       <button class="size-btn" onclick="pickSize('3XL')">3XL</button>
       <button class="size-btn" onclick="pickSize('4XL')">4XL</button>
-      <button class="size-btn" onclick="pickSize('5XL')">5XL</button>
     </div>
     <button id="size-confirm-btn" disabled onclick="confirmSize()">Confirm size</button>
   </div>
@@ -1211,15 +1222,38 @@ function renderBackupList() {
     return;
   }
   list.style.display = 'flex';
+  list.style.flexWrap = 'wrap';
+  list.style.gap = '8px';
   list.innerHTML = backups.map((r, i) => {
     const isMine = r.session && r.session === SESSION_TOKEN;
     const removeBtn = isMine
-      ? `<button onclick="removeBackup(${i})" style="margin-left:4px;font-size:12px;color:#aaa;background:none;border:none;cursor:pointer;line-height:1;">×</button>`
+      ? `<button onclick="removeBackup(${i})" style="margin-left:2px;font-size:12px;color:#aaa;background:none;border:none;cursor:pointer;line-height:1;">×</button>`
       : '';
-    return `<span style="display:inline-flex;align-items:center;background:#FAEEDA;color:#633806;font-size:12px;padding:3px 10px;border-radius:12px;border:0.5px solid #BA7517;">
-      ${r.name} <span style="font-size:10px;opacity:0.6;margin-left:4px;">(${r.gender})</span>${removeBtn}
+    const sizeVal = r.size || '';
+    const sizeBtn = sizeVal
+      ? `<button onclick="openBackupSizePicker(${i})" style="margin-left:6px;font-size:10px;background:#E1F5EE;color:#085041;border:0.5px solid #0F6E56;border-radius:6px;padding:1px 7px;cursor:pointer;font-weight:500;">${sizeVal} ✎</button>`
+      : `<button onclick="openBackupSizePicker(${i})" style="margin-left:6px;font-size:10px;background:white;color:#534AB7;border:0.5px solid #534AB7;border-radius:6px;padding:1px 7px;cursor:pointer;">+ size</button>`;
+    return `<span style="display:inline-flex;align-items:center;background:#FAEEDA;color:#633806;font-size:12px;padding:4px 10px;border-radius:12px;border:0.5px solid #BA7517;">
+      ${r.name}<span style="font-size:10px;opacity:0.6;margin-left:4px;">(${r.gender})</span>${sizeBtn}${removeBtn}
     </span>`;
   }).join('');
+}
+
+function openBackupSizePicker(index) {
+  const backups = allSignups.filter(s => s.stageId === 0);
+  const r = backups[index];
+  if (!r) return;
+  // Find the real index in allSignups
+  const ai = allSignups.findIndex(s => s.stageId === 0 && s.name === r.name && s.signedAt === r.signedAt);
+  // Reuse the size picker modal — set a special backup target
+  sizeTarget   = { stageId: 0, sheetStageId: 0, idx: ai, name: r.name, signedAt: r.signedAt, isBackup: true, backupIndex: index };
+  selectedSize = r.size || null;
+  document.getElementById('size-modal-title').textContent = 'Hoodie size — ' + r.name;
+  document.querySelectorAll('.size-btn').forEach(b => {
+    b.classList.toggle('selected', b.textContent.trim() === selectedSize);
+  });
+  document.getElementById('size-confirm-btn').disabled = !selectedSize;
+  document.getElementById('size-overlay').classList.add('open');
 }
 
 function removeBackup(index) {
@@ -1835,26 +1869,31 @@ function confirmSize() {
   if (!sizeTarget || !selectedSize) return;
   const { stageId, sheetStageId, idx, name, signedAt } = sizeTarget;
 
-  // 1. Update local runners array
-  const r = (runners[stageId] || [])[idx];
-  if (r) r.size = selectedSize;
+  // 1. Update local data
+  if (sizeTarget.isBackup) {
+    // Backup: update directly in allSignups by index
+    if (allSignups[idx]) allSignups[idx].size = selectedSize;
+  } else {
+    const r = (runners[stageId] || [])[idx];
+    if (r) r.size = selectedSize;
+    // Update allSignups
+    const ai = allSignups.findIndex(s =>
+      s.name === name && s.stageId === stageId && s.signedAt === signedAt
+    );
+    if (ai !== -1) allSignups[ai].size = selectedSize;
+  }
 
-  // 2. Update allSignups
-  const ai = allSignups.findIndex(s =>
-    s.name === name && s.stageId === stageId && s.signedAt === signedAt
-  );
-  if (ai !== -1) allSignups[ai].size = selectedSize;
-
-  // 3. Persist to sessionStorage cache (survives tab refresh)
+  // 2. Persist to sessionStorage cache
   saveSizeCache(name, stageId, selectedSize);
 
-  // 4. Build payload BEFORE closing (closeSizePicker resets selectedSize to null)
+  // 3. Build payload BEFORE closing (closeSizePicker resets selectedSize to null)
   const payload = { action: 'updateSize', stageId: sheetStageId, name, size: selectedSize };
 
-  // 5. Update UI
+  // 4. Update UI
   closeSizePicker();
   renderStagesTable();
-  if (selectedId === stageId || selectedId === 24 || selectedId === 25) showDetail(selectedId || stageId);
+  renderBackupList();
+  if (!sizeTarget.isBackup && (selectedId === stageId || selectedId === 24 || selectedId === 25)) showDetail(selectedId || stageId);
 
   // 6. Sync to Google Sheet
 
