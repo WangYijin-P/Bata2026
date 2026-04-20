@@ -1224,7 +1224,7 @@ function renderStagesTable() {
       if (allFinal.length > 0) {
         sizeHtml2425 = allFinal.map((r) => {
           const label = r.size
-            ? `<button class="st-size-btn has-size" onclick="openSizePicker(${r._slot},${r._idx})" title="Click to change" style="display:flex;align-items:center;gap:6px;padding:3px 8px 3px 4px;"><img src="${HOODIE_COLOR_B64}" style="width:22px;height:22px;object-fit:contain;border-radius:3px;"/><span>${r.name.split(' ')[0]}: ${r.size} ✎</span></button>`
+            ? `<button class="st-size-btn has-size" onclick="openSizePicker(${r._slot},${r._idx})" title="Click to change">${r.name.split(' ')[0]}: ${r.size} ✎</button>`
             : `<button class="st-size-btn" onclick="openSizePicker(${r._slot},${r._idx})">${r.name.split(' ')[0]}: + size</button>`;
           return `<div>${label}</div>`;
         }).join('');
@@ -1278,7 +1278,7 @@ function renderStagesTable() {
     if (rList.length > 0) {
       sizeHtml = rList.map((r, ri) => {
         const label = r.size
-          ? `<button class="st-size-btn has-size" onclick="openSizePicker(${e.id},${ri})" title="Click to change" style="display:flex;align-items:center;gap:6px;padding:3px 8px 3px 4px;"><img src="${HOODIE_COLOR_B64}" style="width:22px;height:22px;object-fit:contain;border-radius:3px;"/><span>${r.size} ✎</span></button>`
+          ? `<button class="st-size-btn has-size" onclick="openSizePicker(${e.id},${ri})" title="Click to change">${r.size} ✎</button>`
           : `<button class="st-size-btn" onclick="openSizePicker(${e.id},${ri})">+ Select size</button>`;
         return `<div style="display:flex;align-items:center;gap:5px;">${label}</div>`;
       }).join('');
