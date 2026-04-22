@@ -1816,10 +1816,11 @@ function confirmSize() {
   const payload = { action: 'updateSize', stageId: sheetStageId, name, size: selectedSize };
 
   // 4. Update UI
+  const wasBackup = sizeTarget.isBackup;
   closeSizePicker();
   renderStagesTable();
   renderBackupList();
-  if (!sizeTarget.isBackup && (selectedId === stageId || selectedId === 24 || selectedId === 25)) showDetail(selectedId || stageId);
+  if (!wasBackup && (selectedId === stageId || selectedId === 24 || selectedId === 25)) showDetail(selectedId || stageId);
 
   // 6. Sync to Google Sheet
 
