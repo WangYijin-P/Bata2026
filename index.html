@@ -343,7 +343,7 @@ body {
 #size-modal {
   background:white; border-radius:16px; padding:28px;
   max-width:520px; width:90%; box-shadow:0 8px 40px rgba(0,0,0,0.18);
-  position:relative;
+  position:relative; max-height:90vh; overflow-y:auto;
 }
 #size-modal h3 { font-size:16px; font-weight:500; margin-bottom:4px; }
 #size-modal p  { font-size:12px; color:#888; margin-bottom:16px; }
@@ -533,6 +533,7 @@ body {
       <button class="size-btn" onclick="pickSize('XXL')">XXL</button>
       <button class="size-btn" onclick="pickSize('3XL')">3XL</button>
       <button class="size-btn" onclick="pickSize('4XL')">4XL</button>
+      <button class="size-btn" onclick="pickSize('No')">No</button>
     </div>
     <button id="size-confirm-btn" disabled onclick="confirmSize()">Confirm size</button>
   </div>
